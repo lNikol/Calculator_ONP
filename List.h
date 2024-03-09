@@ -5,8 +5,8 @@ class List {
 	size_t size = 0;
 public:
 	List();
-	void begin();
-	void end();
+	Token* begin();
+	Token* end();
 	size_t GetSize();
 	void push_back(Token* t);
 	void pop_back();

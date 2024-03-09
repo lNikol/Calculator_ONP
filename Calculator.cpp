@@ -18,16 +18,27 @@ int findPriority(OperationPriority ops[], char op) {
 	return -1;
 }
 
-Token* createToken(char* char_op, int& char_op_count, List& list) { 
-	char_op[char_op_count++] = '\0';
+bool isNumber(const char* str) {
+	for (int i = 0; str[i] != '\0'; i++) {
+		if (!isdigit(str[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+Token* createToken(char* char_op, int& char_op_count) { 
 	// List& stos lub List& wyjscie i dodawac do stosu/wyjscia tokeny
 
 	Token* temp = new Token(char_op, char_op_count);
 	for (int i = 0; i < char_op_count; i++) {
+		cout << char_op[i] << " ";
 		char_op[i] = -52; // default undefined value for char
 	}
 	char_op_count = 0;
-	temp->showToken();
+	cout << endl;
+	//temp->showToken();
 	return temp;
 }
 int main()
@@ -50,10 +61,11 @@ int main()
 	const int EQUATION_LENGTH = 10000; // zamienic
 	//char* equation = new char[EQUATION_LENGTH];
 
-	char input[] = "1 2 3 4 5 6 7";//MIN ( 100 , MAX ( 1 , 34 , 2 ) , 80 ,  MIN ( 66 , 36  , 35 , 77 ) , 50 , 60 ) .
-	char output[EQUATION_LENGTH];
+	char input[] = "MIN ( 3 - 9 * 2 / 7 , IF ( 2 + 7 , 0 - 6 , 8 + 0 ) , IF ( 6 * 5 , ( 5 / 8 ) , N ( 6 ) ) , MAX ( 4 , 4 , 4 , 1 ) / 7 * 1 , MIN ( MIN ( 7 , 6 , 0 , 0 , 6 ) , ( 0 * 3 ) , ( 6 * 1 ) , ( 8 + 1 ) ) , ( 7 - 5 + N 4 ) ) .";//
 
-	List list;
+	List inputList;
+	List outputList;
+	List stack;
 
 	/*
 	* zrob cin linijki i for dla tych linijek
@@ -69,14 +81,64 @@ int main()
 	while (input[c] != '\0') {
 		if (input[c] != ' ') {
 			char_op[char_op_count++] = input[c];
-			if (input[c + 1] == '\0') list.push_back(createToken(char_op, char_op_count, list));
+			//if (input[c + 1] == '\0' && input[c] != '.') {
+			//	char_op[char_op_count++] = '\0';
+			//	cout << "dzialam\n";
+			//}
 		}
 		else if (input[c] == '\n') {
 
 		}
-		//(input[c] == 'M' || input[c] == 'A' || input[c] == 'X' || input[c] == 'I' || input[c] == 'N')
+		else if (input[c] == '.') {
+		}
 		else {
-			list.push_back(createToken(char_op, char_op_count, list));
+			if (input[c + 1] == '.') {
+				cout << "KROPKA\n";
+			}
+			char_op[char_op_count++] = '\0';
+
+			if (char_op[0] != '\0' && isNumber(char_op)) {
+				//cout << "S";
+				outputList.push_back(createToken(char_op, char_op_count));
+			}
+			else {
+				if (char_op[0] == '.') cout << "Kr\n";
+				Token* tm = createToken(char_op, char_op_count);
+				switch (tm->symbols[0]) {
+				case '+': stack.push_back(tm); break;
+				case '-': stack.push_back(tm); break;
+				case '*': stack.push_back(tm); break;
+				case '/': stack.push_back(tm); break;
+				case '?': stack.push_back(tm); break;
+				case '~': stack.push_back(tm); break;
+				case '<': stack.push_back(tm); break;
+				case '>': stack.push_back(tm); break;
+				case '(': stack.push_back(tm); break;
+				case ',': 
+				{
+					//delete tm;
+					auto* end = stack.end();
+					//Token* tmp = end;
+					// Nie jestem pewien czy poprawnie dziala usuniecie wskaznika. mysle ze gdzies moga byc wycieki pamieci
+					//cout << "B" << end <<" "<<end->symbols[0];
+					while (end != nullptr && end->symbols[0] != '(') {
+						//cout << endl << "while1: " << end << endl;
+						outputList.push_back(end);
+						stack.pop_back();
+						end = stack.end();
+						//cout << endl << "while2: " << end << endl;
+
+					}
+					break;
+				}
+					
+				
+				default:break;
+				}
+				stack.drawList(); cout << endl;
+				//inputList.push_back(tm); - jakis problem z tm
+
+			}
 		}
 		c++;
 		/*if (isdigit(input[c])) {
@@ -84,8 +146,6 @@ int main()
 		}*/
 	}
 	cout << endl;
-	list.drawList();
-
 	//while (test[length] != '\0' || (int)test[length] > 0) {
 	//	if (isdigit(test[length])) {
 	//		output[outputIndex] = test[length];

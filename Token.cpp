@@ -33,5 +33,9 @@ void Token::showToken() {
 }
 
 Token::~Token() {
-	if (symbols != nullptr) delete[] symbols;
+	
+	if (symbols != nullptr) {
+		cout << symbols[0];
+		delete[] symbols;
+	}
 }
