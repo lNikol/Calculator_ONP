@@ -14,15 +14,19 @@ void List::push_back(Token* t) {
 	}
 	else if (t == nullptr) return;
 	else {
+		//cout << "\npush_back_: ";
+		//for (int i = 0; i < t->size; i++) {
+			//cout << t->symbols[i];
+		//}
+		//cout <<" push_back_end" << endl;
 		t->next = nullptr;
-		if (first == nullptr) return;
 
 		Token* tmp = first;
 		while (tmp->next != nullptr) {
 			tmp = tmp->next;
 		}
 		tmp->next = new Token(*t);
-
+		//cout << "push_back " << tmp << "\n";
 		//		Token* tmp2 = t;
 		//tmp->next = t;
 	}

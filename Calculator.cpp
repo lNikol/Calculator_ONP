@@ -33,12 +33,12 @@ Token* createToken(char* char_op, int& char_op_count) {
 
 	Token* temp = new Token(char_op, char_op_count);
 	for (int i = 0; i < char_op_count; i++) {
-		cout << char_op[i] << " ";
+		//cout << char_op[i] << " ";
 		char_op[i] = -52; // default undefined value for char
 	}
 	char_op_count = 0;
 	cout << endl;
-	//temp->showToken();
+	temp->showToken();
 	return temp;
 }
 int main()
@@ -87,22 +87,21 @@ int main()
 			//}
 		}
 		else if (input[c] == '\n') {
-
 		}
 		else if (input[c] == '.') {
 		}
 		else {
-			if (input[c + 1] == '.') {
-				cout << "KROPKA\n";
-			}
 			char_op[char_op_count++] = '\0';
 
 			if (char_op[0] != '\0' && isNumber(char_op)) {
 				//cout << "S";
+
+				//for (int i = 0; i < char_op_count; i++) {
+				//	cout << char_op[i] << " ";
+				//}
 				outputList.push_back(createToken(char_op, char_op_count));
 			}
 			else {
-				if (char_op[0] == '.') cout << "Kr\n";
 				Token* tm = createToken(char_op, char_op_count);
 				switch (tm->symbols[0]) {
 				case '+': stack.push_back(tm); break;
@@ -116,14 +115,16 @@ int main()
 				case '(': stack.push_back(tm); break;
 				case ',': 
 				{
-					//delete tm;
 					auto* end = stack.end();
-					//Token* tmp = end;
-					// Nie jestem pewien czy poprawnie dziala usuniecie wskaznika. mysle ze gdzies moga byc wycieki pamieci
-					//cout << "B" << end <<" "<<end->symbols[0];
 					while (end != nullptr && end->symbols[0] != '(') {
-						//cout << endl << "while1: " << end << endl;
+						cout << endl << "while1: " << end->symbols[0] << endl;
+						cout << "outputlist before: ";
+						outputList.drawList();
+						cout << endl; 
 						outputList.push_back(end);
+						cout << "outputlist after: ";
+						outputList.drawList();
+						cout << endl;
 						stack.pop_back();
 						end = stack.end();
 						//cout << endl << "while2: " << end << endl;
@@ -135,6 +136,7 @@ int main()
 				
 				default:break;
 				}
+				cout << "stack: ";
 				stack.drawList(); cout << endl;
 				//inputList.push_back(tm); - jakis problem z tm
 
