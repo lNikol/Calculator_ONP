@@ -5,6 +5,7 @@ using namespace std;
 Token::Token(const Token& t) {
 	size = t.size;
 	counter = t.counter;
+	index = t.index;
 	symbols = new char[size];
 	for (size_t i = 0; i < size; i++) {
 		symbols[i] = t.symbols[i];

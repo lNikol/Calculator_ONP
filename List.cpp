@@ -38,12 +38,19 @@ void List::pop_back() {
 		 return;
 	}
 	Token* tmp = first;
-	while (tmp->next->next != nullptr) {
+	while (tmp->next != nullptr && tmp->next->next != nullptr) {
 		tmp = tmp->next;
 	}
 	//cout << "pop_back: " << tmp << " next: " << tmp->next << endl;
-	delete tmp->next; // nie dziala poprawnie, kiedy usuwam jakis element ze stosu, to w output nie chce sie pojawiac
-	tmp->next = nullptr;
+	if (tmp->next != nullptr)
+	{
+		delete tmp->next;
+		tmp->next = nullptr;
+	}
+	else if (tmp == first) {
+		delete first;
+		first = nullptr;
+	}
 	size--;
 }
 
