@@ -87,7 +87,8 @@ void LogicComponent::readInput(const char* input) {
 				case ')':
 				{
 					short int prior = findPriority(tm->symbols[0]);
-					if (prior == 1 || prior == 2) tm->counter = 2;
+					if (prior == 1 || prior == 2) tm->arguments = 2;
+					if (tm->symbols[0] == '~') tm->arguments = 1;
 					inputList.push_back(tm);
 					delete tm;
 					break;
@@ -109,8 +110,7 @@ short int LogicComponent::findPriority(const char& s) {
 	case '+': case '-': return 1;
 	case '*': case '/': return 2;
 
-	case '?': case '~':
-	case '<': case '>': return 3;
+	case '?': case '<': case '~': case '>': return 3; // negacja right associative
 
 	case'(': case ')': return 4;
 	default: return -1;
@@ -129,7 +129,6 @@ void LogicComponent::replaceOperations(Token* token) {
 	while (tmp != nullptr && stackPrior != -1 && stackPrior <= 2 && stackPrior >= tokenPrior) {
 		if (tokenPrior != -1) {
 			if (token->symbols[0] != '~') {
-				cout << "associativity==left\n";
 				outputList.push_back(tmp);
 				stack.pop_back();
 				tmp = stack.end();
@@ -145,117 +144,278 @@ void LogicComponent::replaceOperations(Token* token) {
 }
 
 void LogicComponent::startConversion() {
-	firstToken = inputList.begin();
-		convertToONP(inputList.begin(), nullptr);
-	//	delete& inputList;
+	convertToONP(inputList.begin(), false, false, nullptr);
 }
 
 void LogicComponent::pullOutOperator(Token* end) {
-	outputList.push_back(end);
-	stack.pop_back();
+	while (end != nullptr && end->symbols[0] != '(') {
+		cout << endl << "while: " << end->symbols[0] << endl;
+		cout << "outputlist before : ";
+		outputList.drawList();
+		cout << "\nstack before :";
+		stack.drawList();
+		cout << endl;
+		outputList.push_back(end);
+		stack.pop_back();
+		cout << "outputlist after : ";
+		outputList.drawList();
+		cout << endl;
+		end = stack.end();
+	}
 	end = stack.end();
+	if (end != nullptr && end->symbols[0] == '(') {
+		stack.pop_back();
+		end = stack.end();
+	}
+	if (end != nullptr) {
+		int prior = findPriority(end->symbols[0]);
+		if (prior == 3) {
+			outputList.push_back(end);
+			stack.pop_back();
+			end = stack.end();
+		}
+	}
 }
 
-void LogicComponent::convertToONP(Token* token, short int* counter_operands = nullptr) {
-	int counter_operands_ = 0;
+Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
+	bool isInsideFunction, short int* counter_operands = nullptr) {
 	short int function_count = 0;
-	while (token != nullptr) {// && token->next != firstToken
-		Token* tmp(token);
-		if (tmp->symbols[0] != '\0' && isNumber(tmp->symbols)) {
-			outputList.push_back(tmp);
+	Token* functionPointer = nullptr;
+	short int functionArgs = 0;
+
+	while (token != nullptr) {
+		if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
+			outputList.push_back(token);
 		}
 		else {
-			switch (tmp->symbols[0]) {
+			switch (token->symbols[0]) {
 			case '+': case '-':
 			case '*': case '/':
-				replaceOperations(tmp); break;
+				case '~':
+				replaceOperations(token); break;
 				// functions
-			case '?': case '~':
+			case '?': 
 			case '<': case '>':
-				// brackets
-			case '(':
 			{
-				//if (tmp == firstToken || tmp->next == firstToken || tmp->next->next == firstToken) return;
-
-				if (findPriority(tmp->symbols[0] == 3) && tmp->next->symbols[0] == '(') {
-					tmp->counter = 1;
-					//convertToONP(tmp->next->next, &(tmp->counter));
-					break;
-				}
-				//short int opTemp = findPriority(token->symbols[0]);
-				//if (opTemp == 3) {
-				//	Token* tmp(token);
-				//	tmp->index = function_count++;
-				//	operationList.push_back(tmp);
-				//}
-				stack.push_back(tmp);
+				functionPointer = new Token(*token);
+				functionArgs = 0;
 				break;
 			}
-			case ',':
+			case '(':
 			{
-				//if (tmp == firstToken || tmp->next == firstToken || tmp->next->next == firstToken) return;
-				if(counter_operands!=nullptr) *counter_operands += 1;
-				/*Token* tm_ = operationList.end();
-				tm_->counter += 1;*/
-				auto* end = stack.end();
-
-				//Если стек закончился до того, как был встречен токен открывающая скобка, 
-				//то в выражении пропущен разделитель аргументов функции (запятая), либо пропущена открывающая скобка.
-				//Проверить это условие (написать код) !!!
-
-				while (end != nullptr && end->symbols[0] != '(') {
-					cout << endl << "while1: " << end->symbols[0] << endl;
-					cout << "outputlist before : ";
-					outputList.drawList();
-					cout << endl;
-					pullOutOperator(end);
-
-					cout << "outputlist after : ";
-					outputList.drawList();
-					cout << endl;
-					end = stack.end();
+				token = convertToONP(token->next, true,
+					functionPointer != nullptr, &functionArgs);
+				if (functionPointer) {
+					functionPointer->arguments = functionArgs;
+					stack.push_back(functionPointer);
+					delete functionPointer;
 				}
-				// if(end != nullptr && end->symbols[0] == '(') stack.pop_back(); // not sure
+				functionPointer = nullptr;
+				if (token->symbols[0] == ')') {
+					pullOutOperator(stack.end());
+				}
 				break;
 			}
 			case ')': {
 
-				//Если стек закончился до того, как был встречен токен открывающая скобка, то в выражении пропущена скобка.
+				// Если стек закончился до того, как был встречен токен открывающая скобка, то в выражении пропущена скобка.
 				// Проверить условия (написать код) !!!
 				auto* end = stack.end();
-				while (end != nullptr && end->symbols[0] != '(') {
-					cout << endl << "while2) : " << end->symbols[0] << endl;
-					cout << "outputlist before) : ";
-					outputList.drawList();
-					pullOutOperator(end);
-					cout << "outputlist after) : ";
-					outputList.drawList();
-					end = stack.end();
-					//cout << endl << "while2: " << end << endl;
-				}
-				if (end != nullptr && end->symbols[0] == '(') {
-					stack.pop_back();
-					end = stack.end();
-				}
-				if (end != nullptr) {
-					int prior = findPriority(end->symbols[0]);
-					if (prior == 3) {
-						pullOutOperator(end);
-					}
-				}
+				pullOutOperator(stack.end());
+				
+				if (isInsideFunction && counter_operands) *counter_operands += 1;
+				if (callFromConvert) return token;
 				break;
 			}
 
-
-			default:break;
+			case ',':
+			{
+				if (isInsideFunction && counter_operands) *counter_operands += 1;
+				//Если стек закончился до того, как был встречен токен открывающая скобка, 
+				//то в выражении пропущен разделитель аргументов функции (запятая), либо пропущена открывающая скобка.
+				//Проверить это условие (написать код) !!!
+				pullOutOperator(stack.end());
+				break;
+			}
+			default:
+				break;
 			}
 			cout << "stack: ";
 			stack.drawList(); cout << endl;
 			cout << "outputlist: ";
 			outputList.drawList(); cout << endl;
-
 		}
 		token = token->next;
 	}
 
+	cout << "After while stack: " << endl;
+	stack.drawList();
+
+	pullOutOperator(stack.end());
+	cout << endl;
+	cout << "After while ouputlist: " << endl;
+	outputList.drawList();
+	cout << endl;
+	return nullptr;
 }
+
+
+
+
+
+
+//Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
+//	bool isInsideFunction, short int* counter_operands = nullptr) {
+//	short int function_count = 0;
+//	Token* functionPointer = nullptr;
+//	short int functionArgs = 0;
+//
+//	while (token != nullptr) {
+//		if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
+//			outputList.push_back(token);
+//		}
+//		else {
+//			switch (token->symbols[0]) {
+//			case '+': case '-':
+//			case '*': case '/':
+//				replaceOperations(token); break;
+//				// functions
+//			case '?': case '~':
+//			case '<': case '>':
+//			{
+//				functionPointer = new Token(*token);
+//				functionArgs = 0;
+//				break;
+//			}
+//			case '(':
+//			{
+//				token = convertToONP(token->next, true,
+//					functionPointer != nullptr, &functionArgs);
+//				if (functionPointer) {
+//					functionPointer->arguments = functionArgs;
+//					stack.push_back(functionPointer);
+//					delete functionPointer;
+//				}
+//				functionPointer = nullptr;
+//				break;
+//			}
+//			case ',':
+//			{
+//				if (isInsideFunction && counter_operands) *counter_operands += 1;
+//				//Если стек закончился до того, как был встречен токен открывающая скобка, 
+//				//то в выражении пропущен разделитель аргументов функции (запятая), либо пропущена открывающая скобка.
+//				//Проверить это условие (написать код) !!!
+//				auto* end = stack.end();
+//				pullOutOperator(end);
+//				break;
+//			}
+//			case ')': {
+//
+//				// Если стек закончился до того, как был встречен токен открывающая скобка, то в выражении пропущена скобка.
+//				// Проверить условия (написать код) !!!
+//				auto* end = stack.end();
+//				pullOutOperator(end);
+//				end = stack.end();
+//				if (end != nullptr && end->symbols[0] == '(') {
+//					stack.pop_back();
+//					end = stack.end();
+//				}
+//				if (end != nullptr) {
+//					int prior = findPriority(end->symbols[0]);
+//					if (prior == 3) {
+//						outputList.push_back(end);
+//						stack.pop_back();
+//						end = stack.end();
+//					}
+//				}
+//				if (isInsideFunction && counter_operands) *counter_operands += 1;
+//				if (callFromConvert) return token;
+//				break;
+//			}
+//			default:
+//				break;
+//			}
+//			cout << "stack: ";
+//			stack.drawList(); cout << endl;
+//			cout << "outputlist: ";
+//			outputList.drawList(); cout << endl;
+//		}
+//		token = token->next;
+//	}
+//
+//	cout << "After while stack: " << endl;
+//	stack.drawList();
+//
+//	auto* end = stack.end();
+//	pullOutOperator(end);
+//	cout << endl;
+//	cout << "After while ouputlist: " << endl;
+//	outputList.drawList();
+//	cout << endl;
+//	return nullptr;
+//}
+
+
+
+
+
+
+
+
+
+//short int prior = findPriority(token->symbols[0]);
+//if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
+//	outputList.push_back(token);
+//}
+//else if (prior == 1 || prior == 2) {
+//	replaceOperations(token);
+//}
+//else if (prior == 3) {
+//	functionPointer = new Token(*token);
+//	functionArgs = 0;
+//}
+//else if (prior == 4 && token->symbols[0] == '(') {
+//	token = convertToONP(token->next, true,
+//		functionPointer != nullptr, &functionArgs);
+//	if (functionPointer) {
+//		functionPointer->arguments = functionArgs;
+//		stack.push_back(functionPointer);
+//		delete functionPointer;
+//	}
+//	functionPointer = nullptr;
+//}
+//else if (prior == 4 && token->symbols[0] == ')') {
+//	auto* end = stack.end();
+//	pullOutOperator(end);
+//	end = stack.end();
+//	if (end != nullptr && end->symbols[0] == '(') {
+//		stack.pop_back();
+//		end = stack.end();
+//	}
+//	if (end != nullptr) {
+//		int prior = findPriority(end->symbols[0]);
+//		if (prior == 3) {
+//			outputList.push_back(end);
+//			stack.pop_back();
+//			end = stack.end();
+//		}
+//	}
+//	if (isInsideFunction && counter_operands) *counter_operands += 1;
+//	if (callFromConvert) return token;
+//	break;
+//}
+//else if (token->symbols[0] == ',' && isInsideFunction && counter_operands) {
+//	if (isInsideFunction && counter_operands) *counter_operands += 1;
+//	//Если стек закончился до того, как был встречен токен открывающая скобка, 
+//	//то в выражении пропущен разделитель аргументов функции (запятая), либо пропущена открывающая скобка.
+//	//Проверить это условие (написать код) !!!
+//	pullOutOperator(stack.end());
+//}
+//else {
+//
+//}
+//cout << "stack: ";
+//stack.drawList(); cout << endl;
+//cout << "outputlist: ";
+//outputList.drawList(); cout << endl;
+//token = token->next;

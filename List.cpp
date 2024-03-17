@@ -70,7 +70,7 @@ void List::increaseByIndex(short int& index) {
 	for (int i = 0; i <= size; i++) {
 		if (tmp != nullptr) {
 			if (i == index) {
-				tmp->counter += 1;
+				tmp->arguments += 1;
 				break;
 			}
 			if (index > i) {

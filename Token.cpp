@@ -4,7 +4,7 @@ using namespace std;
 
 Token::Token(const Token& t) {
 	size = t.size;
-	counter = t.counter;
+	arguments = t.arguments;
 	index = t.index;
 	symbols = new char[size];
 	for (size_t i = 0; i < size; i++) {
@@ -33,7 +33,7 @@ void Token::showToken() {
 Token::~Token() {
 	cout << "~Token(size:"<<size<<"): ";
 	if (symbols != nullptr) {
-		cout << symbols[0] << "_" << counter;
+		cout << symbols[0] << "_" << arguments;
 		delete[] symbols;
 	}
 	size = 0;
