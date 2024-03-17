@@ -27,7 +27,7 @@ void Token::showToken() {
 	for (size_t i = 0; i < size; i++) {
 		cout << symbols[i];
 	}
-	cout << endl;
+	cout << " _" << arguments << endl;
 }
 
 Token::~Token() {

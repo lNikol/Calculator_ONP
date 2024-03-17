@@ -13,28 +13,34 @@ bool LogicComponent::isNumber(const char* str) {
 
 
 Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
-	const int size = 2;
-	// List& stos lub List& wyjscie i dodawac do stosu/wyjscia tokeny
-	char symbols[size];
+	cout << "char_op_count: " << char_op_count << endl;
+	int size = 2;
+	char* symbols;
 	if (strcmp(char_op, "MIN") == 0)
 	{
+		symbols = new char[size];
 		symbols[0] = '<';
 		symbols[1] = '\0';
 	}
 	else if (strcmp(char_op, "MAX") == 0)
 	{
+		symbols = new char[size];
 		symbols[0] = '>';
 		symbols[1] = '\0';
 	}
 	else if (strcmp(char_op, "IF") == 0) {
+		symbols = new char[size];
 		symbols[0] = '?';
 		symbols[1] = '\0';
 	}
 	else if (strcmp(char_op, "N") == 0) {
+		symbols = new char[size];
 		symbols[0] = '~';
 		symbols[1] = '\0';
 	}
 	else {
+		size = char_op_count;
+		symbols = new char[size];
 		for (int i = 0; i < size; i++) {
 			symbols[i] = char_op[i];
 		}
@@ -48,6 +54,7 @@ Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
 	}
 	char_op_count = 0;
 	cout << endl;
+	delete[] symbols;
 	//temp->showToken();
 	return temp;
 }
@@ -143,10 +150,6 @@ void LogicComponent::replaceOperations(Token* token) {
 	stack.push_back(token);
 }
 
-void LogicComponent::startConversion() {
-	convertToONP(inputList.begin(), false, false, nullptr);
-}
-
 void LogicComponent::pullOutOperator(Token* end) {
 	while (end != nullptr && end->symbols[0] != '(') {
 		cout << endl << "while: " << end->symbols[0] << endl;
@@ -175,6 +178,10 @@ void LogicComponent::pullOutOperator(Token* end) {
 			end = stack.end();
 		}
 	}
+}
+
+void LogicComponent::startConversion() {
+	convertToONP(inputList.begin(), false, false, nullptr);
 }
 
 Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,

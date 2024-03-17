@@ -21,7 +21,7 @@ int main()
 
 
 
-	char input[] = "MIN ( 100 , MAX ( 1 , 34 , 2 ) , 80 ,  MIN ( 66 , 36  , 35 , 77 ) , 50 , 60 ) .";//
+	char input[] = "MIN ( 100 , MAX ( 1 , 34 , 2 ) , 80 ,  MIN ( 66 , 36  , 35 , 77 ) , 50 , 60 ) .";
 	logic.readInput(input);
 	logic.startConversion();
 }

@@ -58,10 +58,10 @@ void List::pop_back() {
 void List::drawList() {
 	if (first == nullptr) return;
 	Token* tmp = first;
-	cout << first->symbols[0] << " "; //<< "_" << tmp->counter << " ";
+	first->showToken();
 	while (tmp->next != nullptr) {
 		tmp = tmp->next;
-		cout << tmp->symbols[0] << " ";
+		tmp->showToken();
 	}
 }
 
