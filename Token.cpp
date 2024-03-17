@@ -12,35 +12,13 @@ Token::Token(const Token& t) {
 	}
 	next = nullptr;
 }
+
 Token::Token(char* symbs, const int& s) {
 	next = nullptr;
-	symbols = new char[2];
-	size+=2;
-	if (strcmp(symbs, "MIN") == 0)
-	{
-		symbols[0] = '<'; 
-		symbols[1] = '\0';
-	}
-	else if (strcmp(symbs, "MAX") == 0)
-	{
-		symbols[0] = '>';
-		symbols[1] = '\0';
-	}
-	else if (strcmp(symbs, "IF") == 0) {
-		symbols[0] = '?';
-		symbols[1] = '\0';
-	}
-	else if (strcmp(symbs, "N") == 0) {
-		symbols[0] = '~';
-		symbols[1] = '\0';
-	}
-	else {
-		delete[] symbols; size -= 2;
-		symbols = new char[s];
-		for (int i = 0; i < s; i++) {
-			symbols[i] = symbs[i];
-			size++;
-		}
+	symbols = new char[s];
+	for (int i = 0; i < s; i++) {
+		symbols[i] = symbs[i];
+		size++;
 	}
 
 }
@@ -55,7 +33,7 @@ void Token::showToken() {
 Token::~Token() {
 	cout << "~Token(size:"<<size<<"): ";
 	if (symbols != nullptr) {
-		cout << symbols[0];
+		cout << symbols[0] << "_" << counter;
 		delete[] symbols;
 	}
 	size = 0;

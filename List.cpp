@@ -7,9 +7,10 @@ List::List() {
 }
 
 void List::push_back(Token* t) {
+
 	//cout << endl <<" push_back symbol("<<t->symbols[0]<<"): " << t << endl;
 	if (first == nullptr) {
-		first = t;
+		first = new Token(*t);
 		first->next = nullptr;
 	}
 	else if (t == nullptr) return;
@@ -19,7 +20,7 @@ void List::push_back(Token* t) {
 			//cout << t->symbols[i];
 		//}
 		//cout <<" push_back_end" << endl;
-		t->next = nullptr;
+		//t->next = nullptr;
 
 		Token* tmp = first;
 		while (tmp->next != nullptr) {
@@ -57,12 +58,36 @@ void List::pop_back() {
 void List::drawList() {
 	if (first == nullptr) return;
 	Token* tmp = first;
-	cout << first->symbols[0] << " ";
+	cout << first->symbols[0] << " "; //<< "_" << tmp->counter << " ";
 	while (tmp->next != nullptr) {
 		tmp = tmp->next;
 		cout << tmp->symbols[0] << " ";
 	}
 }
+
+void List::increaseByIndex(short int& index) {
+	Token* tmp = first;
+	for (int i = 0; i <= size; i++) {
+		if (tmp != nullptr) {
+			if (i == index) {
+				tmp->counter += 1;
+				break;
+			}
+			if (index > i) {
+				tmp = tmp->next;
+			}
+		}
+	}
+}
+
+short int List::getCounter() {
+	return counter;
+}
+
+void List::setCounter(const short int& s) {
+	counter = s;
+}
+
 
 List::~List() {
 	Token* cur = first;
