@@ -1,5 +1,6 @@
 ﻿#include "Token.h"
 #include <iostream>
+
 using namespace std;
 
 Token::Token(const Token& t) {
@@ -20,22 +21,43 @@ Token::Token(char* symbs, const int& s) {
 		symbols[i] = symbs[i];
 		size++;
 	}
-
 }
+
 void Token::showToken() {
-	cout << "showToken(): ";
 	for (size_t i = 0; i < size; i++) {
-		cout << symbols[i];
+		switch (symbols[0]) {
+		case '?': {
+			cout << "IF";
+			++i;
+			break;
+		}
+		case '>': {
+			cout << "MAX" << arguments;
+			++i;
+			break;
+		}
+		case '<': {
+			cout << "MIN" << arguments;
+			++i;
+			break;
+		}
+		case '~': {
+			cout << "N";
+			i++;
+			break;
+		}
+		default: cout << symbols[i]; break;
+		}
 	}
-	cout << " _" << arguments << endl;
+	cout << "  ";
 }
 
 Token::~Token() {
-	cout << "~Token(size:"<<size<<"): ";
+	//cout << "~Token(size:"<<size<<"): ";
 	if (symbols != nullptr) {
-		cout << symbols[0] << "_" << arguments;
+		//cout << symbols[0] << "_" << arguments;
 		delete[] symbols;
 	}
 	size = 0;
-	cout << endl;
+	//cout << endl;
 }

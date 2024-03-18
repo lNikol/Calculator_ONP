@@ -19,4 +19,11 @@ public:
 	short int findPriority(const char& s);
 	void replaceOperations(Token* token);
 	void pullOutOperator(Token* end);
+	void doDalculations();
+	void doOperation(const char& s, Token* first, Token* second);
+	void doFunction(Token* token);
+	void ifFunc();
+	void minMaxFunc(Token* token);
+	void deleteStackTokens(Token* token);
+	int* calcSortedArr(Token* token);
 };

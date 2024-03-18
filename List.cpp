@@ -65,30 +65,17 @@ void List::drawList() {
 	}
 }
 
-void List::increaseByIndex(short int& index) {
+void List::deleteFirst() {
 	Token* tmp = first;
-	for (int i = 0; i <= size; i++) {
-		if (tmp != nullptr) {
-			if (i == index) {
-				tmp->arguments += 1;
-				break;
-			}
-			if (index > i) {
-				tmp = tmp->next;
-			}
-		}
+	if (tmp == nullptr) return;
+	if (first->next != nullptr) first = first->next;
+	else if(tmp == first){
+		delete tmp;
+		first = nullptr;
 	}
+	else delete tmp;
+	//cout << "deleteFirst: " << endl;
 }
-
-short int List::getCounter() {
-	return counter;
-}
-
-void List::setCounter(const short int& s) {
-	counter = s;
-}
-
-
 List::~List() {
 	Token* cur = first;
 	while (cur != nullptr) {
