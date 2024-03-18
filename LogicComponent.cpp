@@ -174,16 +174,14 @@ void LogicComponent::replaceOperations(Token* token) {
 void LogicComponent::pullOutOperator(Token* end) {
 	while (end != nullptr && end->symbols[0] != '(') {
 		cout << endl << "while: " << end->symbols[0] << endl;
-		cout << "outputlist before : ";
+		cout << "outputlist before: ";
 		outputList.drawList();
-		cout << "\nstack before :";
+		cout << "stack before: ";
 		stack.drawList();
-		cout << endl;
 		outputList.push_back(end);
 		stack.pop_back();
-		cout << "outputlist after : ";
+		cout << "outputlist after: ";
 		outputList.drawList();
-		cout << endl;
 		end = stack.end();
 	}
 	end = stack.end();
@@ -269,7 +267,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				cout << "\n\n.\n";
 				cout << "outputList:\n";
 				outputList.drawList();
-				cout << "\nstack:\n";
+				cout << "stack:\n";
 				stack.drawList();
 				doDalculations(); break;
 			}
@@ -277,9 +275,9 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				break;
 			}
 			cout << "stack: ";
-			stack.drawList(); cout << endl;
+			stack.drawList();
 			cout << "outputlist: ";
-			outputList.drawList(); cout << endl;
+			outputList.drawList();
 		}
 		token = token->next;
 	}
@@ -309,11 +307,14 @@ void LogicComponent::doDalculations() {
 			case '+': case '-':
 			case '*': case '/':
 			{
+				token->showToken();
+				stack.drawReversedList();
 				Token* first = new Token(*stack.end());
 				stack.pop_back();
 				Token* second = new Token(*stack.end());
 				stack.pop_back();
 				doOperation(token->symbols[0], second, first); 
+				cout << endl;
 				token = token->next;
 				outputList.deleteFirst();
 				break;
@@ -322,6 +323,8 @@ void LogicComponent::doDalculations() {
 			case '~': case '?':
 			case '<': case '>':
 			{
+				token->showToken();
+				stack.drawReversedList();
 				doFunction(token);
 				token = token->next;
 				outputList.deleteFirst();
@@ -334,11 +337,9 @@ void LogicComponent::doDalculations() {
 }
 
 void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
+	cout << "doOperation(): ";
+	
 	if (first != nullptr && second != nullptr) {
-		cout << "doOperation(): ";
-		cout << s << " ";
-		stack.drawList();
-		cout << endl;
 		int firstVal = atoi(first->symbols);
 		int secondVal = atoi(second->symbols);
 		Token* result = nullptr;
@@ -359,7 +360,7 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		}
 		case '/': {
 			if (secondVal == 0) {
-				cout << "ERROR"; 
+				cout << "ERROR\n"; 
 				stack.pop_back();
 				break;
 			}
@@ -389,9 +390,6 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 
 void LogicComponent::doFunction(Token* token) {
 	cout << "doFunction (): ";
-	token->showToken();
-	stack.drawList();
-	cout << endl;
 
 	switch (token->symbols[0]) {
 	case '~': {
@@ -477,9 +475,6 @@ int* LogicComponent::calcSortedArr(Token* token) {
 		}
 	}
 	insertionSort(tokenValues, arguments);
-	for (int i = 0; i < arguments; i++)
-		cout << tokenValues[i] << " ";
-	cout << endl;
 	return tokenValues;
 }
 

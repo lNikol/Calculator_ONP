@@ -12,5 +12,6 @@ public:
 	void deleteFirst();
 	void pop_back();
 	void drawList();
+	void drawReversedList();
 	~List();
 };

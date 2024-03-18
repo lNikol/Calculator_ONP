@@ -7,29 +7,20 @@ List::List() {
 }
 
 void List::push_back(Token* t) {
-
-	//cout << endl <<" push_back symbol("<<t->symbols[0]<<"): " << t << endl;
 	if (first == nullptr) {
 		first = new Token(*t);
 		first->next = nullptr;
+		first->prev = nullptr;
 	}
 	else if (t == nullptr) return;
 	else {
-		//cout << "\npush_back_: ";
-		//for (int i = 0; i < t->size; i++) {
-			//cout << t->symbols[i];
-		//}
-		//cout <<" push_back_end" << endl;
-		//t->next = nullptr;
-
 		Token* tmp = first;
 		while (tmp->next != nullptr) {
+			tmp->next->prev = tmp;
 			tmp = tmp->next;
 		}
 		tmp->next = new Token(*t);
-		//cout << "push_back " << tmp << "\n";
-		//		Token* tmp2 = t;
-		//tmp->next = t;
+		tmp->next->prev = tmp;
 	}
 	size++;
 }
@@ -62,7 +53,22 @@ void List::drawList() {
 	while (tmp->next != nullptr) {
 		tmp = tmp->next;
 		tmp->showToken();
+		cout << "  ";
 	}
+	cout << endl;
+}
+
+void List::drawReversedList() {
+	Token* tmp = end();
+	if (tmp == nullptr) return;
+	cout << " ";
+	tmp->showToken();
+	while (tmp->prev != nullptr) {
+		tmp = tmp->prev;
+		cout << " ";
+		tmp->showToken();
+	}
+	cout << endl;
 }
 
 void List::deleteFirst() {
@@ -72,19 +78,11 @@ void List::deleteFirst() {
 	else if(tmp == first){
 		delete tmp;
 		first = nullptr;
+		tmp->prev = nullptr;
 	}
 	else delete tmp;
-	//cout << "deleteFirst: " << endl;
 }
-List::~List() {
-	Token* cur = first;
-	while (cur != nullptr) {
-		Token* next = cur->next;
- 		delete cur;
-		cur = next;
-	}
-	first = nullptr;
-}
+
 
 Token* List::begin() {
 	return first;
@@ -97,4 +95,14 @@ Token* List::end() {
 		tmp = tmp->next;
 	}
 	return tmp;
+}
+
+List::~List() {
+	Token* cur = first;
+	while (cur != nullptr) {
+		Token* next = cur->next;
+		delete cur;
+		cur = next;
+	}
+	first = nullptr;
 }

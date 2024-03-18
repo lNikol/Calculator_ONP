@@ -5,6 +5,7 @@ struct Token {
 	short int index = 0;
 	size_t size = 0;
 	Token* next;
+	Token* prev;
 
 	Token(const Token& t);
 	Token(char* symbols, const int& s);

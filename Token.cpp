@@ -12,10 +12,12 @@ Token::Token(const Token& t) {
 		symbols[i] = t.symbols[i];
 	}
 	next = nullptr;
+	prev = nullptr;
 }
 
 Token::Token(char* symbs, const int& s) {
 	next = nullptr;
+	prev = nullptr;
 	symbols = new char[s];
 	for (int i = 0; i < s; i++) {
 		symbols[i] = symbs[i];
@@ -49,7 +51,6 @@ void Token::showToken() {
 		default: cout << symbols[i]; break;
 		}
 	}
-	cout << "  ";
 }
 
 Token::~Token() {
