@@ -51,9 +51,9 @@ void List::drawList() {
 	Token* tmp = first;
 	first->showToken();
 	while (tmp->next != nullptr) {
+	cout << " ";
 		tmp = tmp->next;
 		tmp->showToken();
-		cout << "  ";
 	}
 	cout << endl;
 }
@@ -105,4 +105,5 @@ List::~List() {
 		cur = next;
 	}
 	first = nullptr;
+	size = 0;
 }

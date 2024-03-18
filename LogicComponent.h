@@ -7,6 +7,7 @@ private:
 	List stack;
 	List outputList;
 	List inputList;
+	bool isERROR = false;
 
 public:
 	bool isNumber(const char* str);

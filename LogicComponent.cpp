@@ -87,6 +87,7 @@ Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
 }
 
 void LogicComponent::readInput(const char* input) {
+	isERROR = false;
 	const short int CHAR_OP_LENGTH = 4;
 	char char_op[CHAR_OP_LENGTH];
 	int c = 0;
@@ -131,6 +132,8 @@ void LogicComponent::readInput(const char* input) {
 		}
 		c++;
 	}
+	//cout << "inputList:";
+	//inputList.drawList();
 }
 
 short int LogicComponent::findPriority(const char& s) {
@@ -173,15 +176,8 @@ void LogicComponent::replaceOperations(Token* token) {
 
 void LogicComponent::pullOutOperator(Token* end) {
 	while (end != nullptr && end->symbols[0] != '(') {
-		cout << endl << "while: " << end->symbols[0] << endl;
-		cout << "outputlist before: ";
-		outputList.drawList();
-		cout << "stack before: ";
-		stack.drawList();
 		outputList.push_back(end);
 		stack.pop_back();
-		cout << "outputlist after: ";
-		outputList.drawList();
 		end = stack.end();
 	}
 	end = stack.end();
@@ -201,6 +197,9 @@ void LogicComponent::pullOutOperator(Token* end) {
 
 void LogicComponent::startConversion() {
 	convertToONP(inputList.begin(), false, false, nullptr);
+	stack.~List();
+	outputList.~List();
+	inputList.~List();
 }
 
 Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
@@ -209,7 +208,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 	Token* functionPointer = nullptr;
 	short int functionArgs = 0;
 
-	while (token != nullptr) {
+	while (token != nullptr && !isERROR) {
 		if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
 			outputList.push_back(token);
 		}
@@ -231,15 +230,19 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 			{
 				token = convertToONP(token->next, true,
 					functionPointer != nullptr, &functionArgs);
-				if (functionPointer) {
-					functionPointer->arguments = functionArgs;
-					stack.push_back(functionPointer);
-					delete functionPointer;
+				if (!isERROR) {
+					if (functionPointer) {
+						functionPointer->arguments = functionArgs;
+						stack.push_back(functionPointer);
+						delete functionPointer;
+					}
+					functionPointer = nullptr;
+					if (token->symbols[0] == ')') {
+						pullOutOperator(stack.end());
+					}
 				}
-				functionPointer = nullptr;
-				if (token->symbols[0] == ')') {
-					pullOutOperator(stack.end());
-				}
+				else return nullptr;
+			
 				break;
 			}
 			case ')': {
@@ -256,47 +259,53 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 
 			case ',':
 			{
-				if (isInsideFunction && counter_operands) *counter_operands += 1;
+				if (isInsideFunction && counter_operands) {
+					auto* end = stack.end();
+					while (end != nullptr && end->symbols[0] != '(') {
+						outputList.push_back(end);
+						stack.pop_back();
+						end = stack.end();
+					}
+					*counter_operands += 1;
+				}
 				//Если стек закончился до того, как был встречен токен открывающая скобка, 
 				//то в выражении пропущен разделитель аргументов функции (запятая), либо пропущена открывающая скобка.
 				//Проверить это условие (написать код) !!!
-				pullOutOperator(stack.end());
+				
 				break;
 			}
 			case '.': {
-				cout << "\n\n.\n";
-				cout << "outputList:\n";
 				outputList.drawList();
-				cout << "stack:\n";
-				stack.drawList();
-				doDalculations(); break;
+				doDalculations(); 
+				if (!isERROR) stack.drawList();
+				else return nullptr;
+				break;
 			}
 			default:
 				break;
 			}
-			cout << "stack: ";
-			stack.drawList();
-			cout << "outputlist: ";
-			outputList.drawList();
 		}
 		token = token->next;
+
+		cout << "stack: ";
+		stack.drawList();
+		cout << "outputlist: ";
+		outputList.drawList();
 	}
-
-	cout << "After while stack: " << endl;
-	stack.drawList();
-
 	pullOutOperator(stack.end());
-	cout << endl;
-	cout << "After while ouputlist: " << endl;
+
+
+	cout << "AFTER:\nstack: ";
+	stack.drawList();
+	cout << "outputlist: ";
 	outputList.drawList();
-	cout << endl;
 	return nullptr;
 }
 
 
 void LogicComponent::doDalculations() {
 	Token* token = outputList.begin();
-	while (token != nullptr) {
+	while (token != nullptr && !isERROR) {
 		if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
 			stack.push_back(token);
 			token = token->next;
@@ -313,10 +322,13 @@ void LogicComponent::doDalculations() {
 				stack.pop_back();
 				Token* second = new Token(*stack.end());
 				stack.pop_back();
-				doOperation(token->symbols[0], second, first); 
-				cout << endl;
-				token = token->next;
-				outputList.deleteFirst();
+				doOperation(token->symbols[0], second, first);
+				if (!isERROR) {
+					token = token->next;
+					outputList.deleteFirst();
+				}
+				else return;
+
 				break;
 			}
 				// functions
@@ -326,19 +338,21 @@ void LogicComponent::doDalculations() {
 				token->showToken();
 				stack.drawReversedList();
 				doFunction(token);
-				token = token->next;
-				outputList.deleteFirst();
+				if (!isERROR) {
+					token = token->next;
+					outputList.deleteFirst();
+				}
+				else return;
 				break;
 			}
 			default:break;
 			}
 		}
 	}
+	stack.drawReversedList();
 }
 
 void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
-	cout << "doOperation(): ";
-	
 	if (first != nullptr && second != nullptr) {
 		int firstVal = atoi(first->symbols);
 		int secondVal = atoi(second->symbols);
@@ -361,8 +375,11 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		case '/': {
 			if (secondVal == 0) {
 				cout << "ERROR\n"; 
-				stack.pop_back();
-				break;
+				stack.~List();
+				outputList.~List();
+				inputList.~List();
+				isERROR = true;
+				return;
 			}
 			else {
 				res = firstVal / secondVal;
@@ -387,10 +404,7 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 
 }
 
-
 void LogicComponent::doFunction(Token* token) {
-	cout << "doFunction (): ";
-
 	switch (token->symbols[0]) {
 	case '~': {
 		char zero[] = "0";
