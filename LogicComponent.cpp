@@ -9,7 +9,7 @@ using namespace std;
 
 short int countDigits(int number) {
 	if (number == 0) return 1;
-	int count = number > 0 ? 0 : 1;
+	short int count = number > 0 ? 0 : 1;
 	while (number != 0) {
 		number /= 10;
 		count++;
@@ -17,14 +17,9 @@ short int countDigits(int number) {
 	return count;
 }
 
-void getCharNumber(char* buff, const short int& length, int& res) {
-	buff = new char[length];
-	sprintf_s(buff, length, "%d", res);
-}
-
 void insertionSort(int arr[], const short int& n)
 {
-	short int i, key, j;
+	int i, key, j;
 	for (i = 1; i < n; i++) {
 		key = arr[i];
 		j = i - 1;
@@ -126,8 +121,9 @@ void LogicComponent::readInput(const char* input) {
 					delete tm;
 					break;
 				}
-				default:break;
+				default: if (tm != nullptr)	delete tm; break;
 				}
+
 			}
 		}
 		c++;
@@ -202,7 +198,6 @@ void LogicComponent::startConversion() {
 
 Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 	bool isInsideFunction, short int* counter_operands = nullptr) {
-	short int function_count = 0;
 	Token* functionPointer = nullptr;
 	short int functionArgs = 0;
 
@@ -304,7 +299,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				//cout << "in . after pull\n\n";
 				outputList.drawList();
 				doCalculations(); 
-				if (!isERROR) stack.drawList();
+				if (!isERROR) stack.drawReversedList();
 				else return nullptr;
 				break;
 			}
@@ -344,6 +339,7 @@ void LogicComponent::doCalculations() {
 			case '*': case '/':
 			{
 				token->showToken();
+				//printf(" ");
 				stack.drawReversedList();
 				Token* first = new Token(*stack.end());
 				stack.pop_back();
@@ -363,6 +359,7 @@ void LogicComponent::doCalculations() {
 			case '<': case '>':
 			{
 				token->showToken();
+				//printf(" ");
 				stack.drawReversedList();
 				doFunction(token);
 				if (!isERROR) {
@@ -383,7 +380,7 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		int firstVal = atoi(first->symbols);
 		int secondVal = atoi(second->symbols);
 		Token* result = nullptr;
-		int res;
+		int res = 0;
 		short int length;
 		switch (s) {
 		case '+': {
@@ -456,10 +453,7 @@ void LogicComponent::ifFunc() {
 	Token* a = new Token(*stack.end());
 	stack.pop_back();
 	
-	int aVal = atoi(a->symbols);
-	int bVal = atoi(b->symbols);
-	int cVal = atoi(c->symbols);
-	aVal > 0 ? stack.push_back(new Token(*b)) : stack.push_back(new Token(*c));
+	atoi(a->symbols) > 0 ? stack.push_back(new Token(*b)) : stack.push_back(new Token(*c));
 	
 	delete a, b, c;
 
@@ -496,13 +490,6 @@ void LogicComponent::minMaxFunc(Token* token) {
 		break;
 	}
 	delete[] tokenValues;
-}
-
-void LogicComponent::deleteStackTokens(Token* token) {
-	short int length = token->arguments;
-	for (short int i = 0; i < length; i++) {
-		stack.pop_back();
-	}
 }
 
 int* LogicComponent::calcSortedArr(Token* token) {

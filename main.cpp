@@ -17,8 +17,8 @@ int main()
 	for (int i = 0; i < lines; i++) {
 		fgets(input, EQUATION_LENGTH, stdin);
 		logic.readInput(input);
-		logic.startConversion();
 		cout << endl;
+		logic.startConversion();
 	}
 
 

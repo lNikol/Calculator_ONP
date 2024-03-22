@@ -29,28 +29,30 @@ void Token::showToken() {
 	for (size_t i = 0; i < size; i++) {
 		switch (symbols[0]) {
 		case '?': {
-			cout << "IF";
+			printf("IF");
 			++i;
 			break;
 		}
 		case '>': {
-			cout << "MAX" << arguments;
+			printf("MAX%d",arguments);
 			++i;
 			break;
 		}
 		case '<': {
-			cout << "MIN" << arguments;
+			printf("MIN%d", arguments);
 			++i;
 			break;
 		}
 		case '~': {
-			cout << "N";
+			printf("N");
 			i++;
 			break;
 		}
-		default: cout << symbols[i]; break;
+		default: printf("%c", symbols[i]); break;
 		}
 	}
+	printf(" ");
+
 }
 
 Token::~Token() {

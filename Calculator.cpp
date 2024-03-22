@@ -121,7 +121,8 @@
 //	int outputIndex = 0;
 //	int c = 0;
 //
-//	short int function_count = -1; // liczy od 0, gdzie 0 to oznacza jeden element
+//	short int 
+//  = -1; // liczy od 0, gdzie 0 to oznacza jeden element
 //	short int prev_function_count = -1; // liczy od 0, gdzie 0 to oznacza jeden element
 //	int token_count = 0;
 //
