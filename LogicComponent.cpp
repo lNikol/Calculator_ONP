@@ -155,9 +155,8 @@ void LogicComponent::replaceOperations(Token* token) {
 	if (tmp != nullptr) {
 		stackPrior = findPriority(tmp->symbols[0]);
 	}
-	else stackPrior = -1;
 
-	while (tmp != nullptr && stackPrior != -1 && stackPrior <= 2 && stackPrior >= tokenPrior) {
+	while (tmp != nullptr && stackPrior != -1 && stackPrior <= 3 && stackPrior >= tokenPrior) {
 		if (tokenPrior != -1) {
 			if (token->symbols[0] != '~') {
 				outputList.push_back(tmp);
@@ -180,14 +179,13 @@ void LogicComponent::pullOutOperator(Token* end) {
 		stack.pop_back();
 		end = stack.end();
 	}
-	end = stack.end();
 	if (end != nullptr && end->symbols[0] == '(') {
 		stack.pop_back();
 		end = stack.end();
 	}
 	if (end != nullptr) {
 		int prior = findPriority(end->symbols[0]);
-		if (prior == 3) {
+		if (prior == 3 && end->symbols[0] != '~') {
 			outputList.push_back(end);
 			stack.pop_back();
 			end = stack.end();
@@ -220,6 +218,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				replaceOperations(token); break;
 				// functions
 			case '?': 
+				//stack.push_back(token); break;
 			case '<': case '>':
 			{
 				functionPointer = new Token(*token);
@@ -228,18 +227,44 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 			}
 			case '(':
 			{
+				stack.push_back(token);
 				token = convertToONP(token->next, true,
 					functionPointer != nullptr, &functionArgs);
 				if (!isERROR) {
+					//cout << "stack in token: ";
+					//stack.drawList();
+					//cout << "outputlist in token: ";
+					//outputList.drawList();
 					if (functionPointer) {
 						functionPointer->arguments = functionArgs;
 						stack.push_back(functionPointer);
+						//cout << "stack in token2: ";
+						//stack.drawList();
+						//cout << "outputlist in token2: ";
+						//outputList.drawList();
+
+						auto* end = stack.end();
+						if (end != nullptr) {
+							int prior = findPriority(end->symbols[0]);
+							if (prior == 3) {
+								outputList.push_back(end);
+								stack.pop_back();
+								end = stack.end();
+							}
+						}
+						/*auto* end = stack.end();
+						
+						if (token->symbols[0] == ')' && end->prev->symbols[0]!='(') {
+							cout << "\n\n tutaj\n\n";
+							if (findPriority(end->symbols[0]) == 3) {
+								outputList.push_back(end);
+								stack.pop_back();
+							}
+						}*/
 						delete functionPointer;
 					}
 					functionPointer = nullptr;
-					if (token->symbols[0] == ')') {
-						pullOutOperator(stack.end());
-					}
+					
 				}
 				else return nullptr;
 			
@@ -249,7 +274,6 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 
 				// Если стек закончился до того, как был встречен токен открывающая скобка, то в выражении пропущена скобка.
 				// Проверить условия (написать код) !!!
-				auto* end = stack.end();
 				pullOutOperator(stack.end());
 				
 				if (isInsideFunction && counter_operands) *counter_operands += 1;
@@ -275,8 +299,11 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				break;
 			}
 			case '.': {
+				//outputList.drawList();
+				pullOutOperator(stack.end());
+				//cout << "in . after pull\n\n";
 				outputList.drawList();
-				doDalculations(); 
+				doCalculations(); 
 				if (!isERROR) stack.drawList();
 				else return nullptr;
 				break;
@@ -287,23 +314,23 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 		}
 		token = token->next;
 
-		cout << "stack: ";
-		stack.drawList();
-		cout << "outputlist: ";
-		outputList.drawList();
+		//cout << "stack: ";
+		//stack.drawList();
+		//cout << "outputlist: ";
+		//outputList.drawList();
 	}
-	pullOutOperator(stack.end());
+	
 
 
-	cout << "AFTER:\nstack: ";
-	stack.drawList();
-	cout << "outputlist: ";
-	outputList.drawList();
+	//cout << "AFTER:\nstack: ";
+	//stack.drawList();
+	//cout << "outputlist: ";
+	//outputList.drawList();
 	return nullptr;
 }
 
 
-void LogicComponent::doDalculations() {
+void LogicComponent::doCalculations() {
 	Token* token = outputList.begin();
 	while (token != nullptr && !isERROR) {
 		if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
@@ -349,7 +376,6 @@ void LogicComponent::doDalculations() {
 			}
 		}
 	}
-	stack.drawReversedList();
 }
 
 void LogicComponent::doOperation(const char& s, Token* first, Token* second) {

@@ -20,7 +20,7 @@ public:
 	short int findPriority(const char& s);
 	void replaceOperations(Token* token);
 	void pullOutOperator(Token* end);
-	void doDalculations();
+	void doCalculations();
 	void doOperation(const char& s, Token* first, Token* second);
 	void doFunction(Token* token);
 	void ifFunc();

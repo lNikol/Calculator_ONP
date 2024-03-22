@@ -60,5 +60,4 @@ Token::~Token() {
 		delete[] symbols;
 	}
 	size = 0;
-	//cout << endl;
 }
