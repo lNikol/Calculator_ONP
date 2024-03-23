@@ -8,7 +8,7 @@ struct Token {
 	Token* prev = nullptr;
 	Token& operator=(Token&& t);
 	Token(const Token& t);
-	Token(Token&& t);
+	Token(const Token&& t);
 	Token(char* symbs, const int& s);
 	void showToken();
 	~Token();

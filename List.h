@@ -2,6 +2,7 @@
 #include "Token.h"
 class List {
 	Token* first = nullptr;
+	Token* last = nullptr;
 	size_t size = 0;
 public:
 	List();

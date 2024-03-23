@@ -7,42 +7,43 @@ List::List() {
 }
 
 void List::push_back(Token* t) {
+	if (t == nullptr) return;
+
 	if (first == nullptr) {
 		first = new Token(*t);
+		last = first;
 		first->next = nullptr;
 		first->prev = nullptr;
+		++size;
+		return;
 	}
-	else if (t == nullptr) return;
-	else {
-		Token* tmp = first;
-		while (tmp->next != nullptr) {
-			tmp->next->prev = tmp;
-			tmp = tmp->next;
-		}
-		tmp->next = new Token(*t);
-		tmp->next->prev = tmp;
-	}
+	last->next = new Token(*t);
+	last->next->prev = last;
+	last = last->next;
 	++size;
+
 }
 
 void List::pop_back() {
 	if (first == nullptr) {
-		return;
+		return; 
 	}
-	Token* tmp = first;
-	while (tmp->next != nullptr && tmp->next->next != nullptr) {
-		tmp = tmp->next;
-	}
-	if (tmp->next != nullptr)
-	{
-		delete tmp->next;
-		tmp->next = nullptr;
-	}
-	else if (tmp == first) {
+
+	--size;
+
+	if (first->next == nullptr) {
 		delete first;
 		first = nullptr;
+		last = nullptr;
+		return;
 	}
-	--size;
+
+	Token* tmp = last->prev;
+	delete last;
+	last = tmp;
+	if (last != nullptr) {
+		last->next = nullptr;
+	}
 }
 
 void List::drawList() const {
@@ -70,15 +71,24 @@ void List::drawReversedList() {
 }
 
 void List::deleteFirst() {
-	Token* tmp = first;
-	if (tmp == nullptr) return;
-	if (first->next != nullptr) first = first->next;
-	else if (tmp == first) {
-		first = nullptr;
-		tmp->prev = nullptr;
-		delete tmp;
+	if (first == nullptr) {
+		return;
 	}
-	else delete tmp;
+
+	--size;
+
+	Token* tmp = first;
+	first = first->next;
+
+	if (first != nullptr) {
+		first->prev = nullptr;
+	}
+	else {
+		// Jesli lista jest teraz pusta, ustawiam last na nullptr
+		last = nullptr;
+	}
+
+	delete tmp;
 }
 
 
@@ -87,12 +97,8 @@ Token* List::begin() {
 }
 
 Token* List::end() {
-	if (first == nullptr) return nullptr;
-	Token* tmp = first;
-	while (tmp->next != nullptr) {
-		tmp = tmp->next;
-	}
-	return tmp;
+	if (last == nullptr) return nullptr;
+	else return last;
 }
 
 List::~List() {
@@ -103,5 +109,6 @@ List::~List() {
 		cur = next;
 	}
 	first = nullptr;
+	last = nullptr;
 	size = 0;
 }
