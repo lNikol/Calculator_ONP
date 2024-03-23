@@ -33,7 +33,6 @@ void List::pop_back() {
 	while (tmp->next != nullptr && tmp->next->next != nullptr) {
 		tmp = tmp->next;
 	}
-	//cout << "pop_back: " << tmp << " next: " << tmp->next << endl;
 	if (tmp->next != nullptr)
 	{
 		delete tmp->next;
@@ -46,30 +45,29 @@ void List::pop_back() {
 	size--;
 }
 
-void List::drawList() {
+void List::drawList() const {
 	if (first == nullptr) return;
 	Token* tmp = first;
 	tmp->showToken();
+	printf(" ");
 	while (tmp->next != nullptr) {
 		tmp = tmp->next;
 		tmp->showToken();
+		printf(" ");
 	}
-	cout << endl;
+	printf("\n");
 }
 
-void List::drawReversedList() {
+void List::drawReversedList(){
 	Token* tmp = end();
 	if (tmp == nullptr) return;
-	if (tmp == first) {
-		tmp->showToken();
-	}
-	//tmp->showToken();
+	tmp->showToken();
 	while (tmp->prev != nullptr) {
-		//printf(" ");
-		tmp->showToken();
 		tmp = tmp->prev;
+		tmp->showToken();
+
 	}
-	cout << endl;
+	printf("\n");
 }
 
 void List::deleteFirst() {

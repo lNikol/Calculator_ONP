@@ -4,8 +4,6 @@
 #include <cstring>
 using namespace std;
 
-// Переписать методы и класс!
-// getCharNumber - naprawic metode, jako argument wysylac countDigits(num) + 1
 
 short int countDigits(int number) {
 	if (number == 0) return 1;
@@ -74,62 +72,11 @@ Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
 
 	Token* temp = new Token(symbols, size);
 	for (int i = 0; i < char_op_count; i++) {
-		char_op[i] = -52; // default undefined value for char
+		char_op[i] = -51; // default undefined value for char
 	}
 	char_op_count = 0;
 	delete[] symbols;
 	return temp;
-}
-
-void LogicComponent::readInput(const char* input) {
-	isERROR = false;
-	const short int CHAR_OP_LENGTH = 4;
-	char char_op[CHAR_OP_LENGTH];
-	int c = 0;
-	int char_op_count = 0;
-	while (input[c] != '\0') {
-		if (input[c] != ' ' && input[c] != '.') {
-			char_op[char_op_count++] = input[c];
-		}
-		else if (input[c] == '\n') {
-		}
-		else {
-			if (input[c] == '.') {
-				char_op[char_op_count++] = '.';
-				char_op[char_op_count++] = '\0';
-			}
-			else {
-				char_op[char_op_count++] = '\0';
-			}
-			if (char_op[0] != '\0' && isNumber(char_op)) {
-				inputList.push_back(createToken(char_op, char_op_count));
-			}
-			else {
-				Token* tm = createToken(char_op, char_op_count);
-				switch (tm->symbols[0]) {
-				case '+': case '-':
-				case '*': case '/':
-				case '?': case '~':
-				case '<': case '>':
-				case ',': case '.':
-				case '(': case ')':
-				{
-					short int prior = findPriority(tm->symbols[0]);
-					if (prior == 1 || prior == 2) tm->arguments = 2;
-					if (tm->symbols[0] == '~') tm->arguments = 1;
-					inputList.push_back(tm);
-					delete tm;
-					break;
-				}
-				default: if (tm != nullptr)	delete tm; break;
-				}
-
-			}
-		}
-		c++;
-	}
-	//cout << "inputList:";
-	//inputList.drawList();
 }
 
 short int LogicComponent::findPriority(const char& s) {
@@ -189,146 +136,112 @@ void LogicComponent::pullOutOperator(Token* end) {
 	}
 }
 
-void LogicComponent::startConversion() {
-	convertToONP(inputList.begin(), false, false, nullptr);
+void LogicComponent::startConversion(char* input, const int& EQUATION_LENGTH) {
+	isERROR = false;
+	const short int CHAR_OP_LENGTH = 20; // 19 dlugosc int + 1
+	char char_op[CHAR_OP_LENGTH];
+	int char_op_count = 0;
+	int c = 0;
+	convertToONP(nullptr, false, false, nullptr, input, char_op, char_op_count, c);
+	//delete[] input;
 	stack.~List();
 	outputList.~List();
-	inputList.~List();
 }
 
 
-
-
-
-
 Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
-	bool isInsideFunction, short int* counter_operands = nullptr) {
+	bool isInsideFunction, short int* counter_operands,
+	char* input, char* char_op, int& char_op_count, int& c) {
 	Token* functionPointer = nullptr;
 	short int functionArgs = 0;
-
-	while (token != nullptr && !isERROR) {
-		if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
-			outputList.push_back(token);
-		}
-		else {
-			switch (token->symbols[0]) {
-			case '+': case '-':
-			case '*': case '/':
-			case '~':
-				replaceOperations(token); break;
-				// functions
-			case '?':
-				//stack.push_back(token); break;
-			case '<': case '>':
-			{
-				functionPointer = new Token(*token);
-				functionArgs = 0;
-				break;
-			}
-			case '(':
-			{
-				stack.push_back(token);
-				token = convertToONP(token->next, true,
-					functionPointer != nullptr, &functionArgs);
-				if (!isERROR) {
-					//cout << "stack in token: ";
-					//stack.drawList();
-					//cout << "outputlist in token: ";
-					//outputList.drawList();
-					if (functionPointer) {
-						functionPointer->arguments = functionArgs;
-						stack.push_back(functionPointer);
-						//cout << "stack in token2: ";
-						//stack.drawList();
-						//cout << "outputlist in token2: ";
-						//outputList.drawList();
-
-						auto* end = stack.end();
-						if (end != nullptr) {
-							int prior = findPriority(end->symbols[0]);
-							if (prior == 3) {
-								outputList.push_back(end);
-								stack.pop_back();
-								end = stack.end();
-							}
-						}
-						/*auto* end = stack.end();
-
-						if (token->symbols[0] == ')' && end->prev->symbols[0]!='(') {
-							cout << "\n\n tutaj\n\n";
-							if (findPriority(end->symbols[0]) == 3) {
-								outputList.push_back(end);
-								stack.pop_back();
-							}
-						}*/
-						delete functionPointer;
-					}
-					functionPointer = nullptr;
-
-				}
-				else return nullptr;
-
-				break;
-			}
-			case ')': {
-
-				// Если стек закончился до того, как был встречен токен открывающая скобка, то в выражении пропущена скобка.
-				// Проверить условия (написать код) !!!
+	while (input[c] != '\0' && !isERROR) {
+		if (input[c] != ' ') {
+			if (input[c] == '.') {
 				pullOutOperator(stack.end());
-
-				if (isInsideFunction && counter_operands) *counter_operands += 1;
-				if (callFromConvert) return token;
-				break;
-			}
-
-			case ',':
-			{
-				if (isInsideFunction && counter_operands) {
-					auto* end = stack.end();
-					while (end != nullptr && end->symbols[0] != '(') {
-						outputList.push_back(end);
-						stack.pop_back();
-						end = stack.end();
-					}
-					*counter_operands += 1;
-				}
-				//Если стек закончился до того, как был встречен токен открывающая скобка, 
-				//то в выражении пропущен разделитель аргументов функции (запятая), либо пропущена открывающая скобка.
-				//Проверить это условие (написать код) !!!
-
-				break;
-			}
-			case '.': {
-				//outputList.drawList();
-				pullOutOperator(stack.end());
-				//cout << "in . after pull\n\n";
 				outputList.drawList();
 				doCalculations();
 				if (!isERROR) stack.drawReversedList();
 				else return nullptr;
-				break;
 			}
-			default:
-				break;
+			else {
+				char_op[char_op_count++] = input[c];
 			}
+
 		}
-		token = token->next;
 
-		//cout << "stack: ";
-		//stack.drawList();
-		//cout << "outputlist: ";
-		//outputList.drawList();
+		else if (input[c] == '\n') {
+		}
+		else {
+			char_op[char_op_count++] = '\0';
+			Token* tm = (token == nullptr) ? createToken(char_op, char_op_count) : new Token(*token);
+
+			if (tm->symbols[0] != '\0' && isNumber(tm->symbols)) {
+				outputList.push_back(tm);
+				char_op_count = 0;
+			}
+			else {
+				char_op_count = 0;
+				switch (tm->symbols[0]) {
+				case '+': case '-':
+				case '*': case '/':
+				case '~':
+					replaceOperations(tm);
+					break;
+					// functions
+				case '?': case '<':
+				case '>':
+					functionPointer = new Token(*tm);
+					functionArgs = 0;
+					break;
+				case '(':
+				{
+					stack.push_back(tm);
+					tm = convertToONP(nullptr, true,
+						functionPointer != nullptr, &functionArgs, input,
+						char_op, char_op_count, ++c);
+
+					if (!isERROR) {
+						if (functionPointer) {
+							functionPointer->arguments = functionArgs;
+							stack.push_back(functionPointer);
+							delete functionPointer;
+						}
+						functionPointer = nullptr;
+					}
+					else return nullptr;
+					break;
+				}
+				case ',':
+				{
+					if (isInsideFunction && counter_operands) {
+						auto* end = stack.end();
+						while (end != nullptr && end->symbols[0] != '(') {
+							outputList.push_back(end);
+							stack.pop_back();
+							end = stack.end();
+						}
+						*counter_operands += 1;
+					}
+					break;
+				}
+				case ')': {
+					pullOutOperator(stack.end());
+					if (isInsideFunction && counter_operands) *counter_operands += 1;
+					if (callFromConvert) return tm;
+					break;
+				}
+
+
+				default:break;
+				}
+			}
+			if (tm != nullptr) delete tm;
+			// sprawdzic memory leak i jak dziala bez warunku na zamkniety nawias
+		}
+		c++;
 	}
-
-
-
-	//cout << "AFTER:\nstack: ";
-	//stack.drawList();
-	//cout << "outputlist: ";
-	//outputList.drawList();
 	return nullptr;
 }
-
 
 void LogicComponent::doCalculations() {
 	Token* token = outputList.begin();
@@ -344,7 +257,6 @@ void LogicComponent::doCalculations() {
 			case '*': case '/':
 			{
 				token->showToken();
-				//printf(" ");
 				stack.drawReversedList();
 				Token* first = new Token(*stack.end());
 				stack.pop_back();
@@ -364,7 +276,6 @@ void LogicComponent::doCalculations() {
 			case '<': case '>':
 			{
 				token->showToken();
-				//printf(" ");
 				stack.drawReversedList();
 				doFunction(token);
 				if (!isERROR) {
@@ -384,7 +295,6 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 	if (first != nullptr && second != nullptr) {
 		int firstVal = atoi(first->symbols);
 		int secondVal = atoi(second->symbols);
-		Token* result = nullptr;
 		int res = 0;
 		short int length;
 		switch (s) {
@@ -419,13 +329,10 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		length = countDigits(res) + 1;
 		char* buff = new char[length];
 		sprintf_s(buff, length, "%d", res);
-		//getCharNumber(buff, length, res);
 
-		result = new Token(buff, length);
-		stack.push_back(result);
+		stack.push_back(new Token(buff, length));
 
 		if (buff != nullptr) delete[] buff;
-		if (result != nullptr) delete result;
 		if (first != nullptr) delete first;
 		if (second != nullptr) delete second;
 	}
@@ -457,8 +364,17 @@ void LogicComponent::ifFunc() {
 	stack.pop_back();
 	Token* a = new Token(*stack.end());
 	stack.pop_back();
-
-	atoi(a->symbols) > 0 ? stack.push_back(new Token(*b)) : stack.push_back(new Token(*c));
+	Token* res;
+	if (atoi(a->symbols) > 0) {
+		res = new Token(*b);
+		stack.push_back(res);
+		delete res;
+	}  
+	else {
+		res = new Token(*c);
+		stack.push_back(res);
+		delete res;
+	}
 
 	delete a, b, c;
 
@@ -472,23 +388,21 @@ void LogicComponent::minMaxFunc(Token* token) {
 	{
 	case '>':
 	{
-		//getCharNumber(buff, length, tokenValues[length - 1]);
 		char* buff;
 		short int len = countDigits(tokenValues[arguments - 1]) + 1;
 		buff = new char[len];
 		sprintf_s(buff, len, "%d", tokenValues[arguments - 1]);
-		//deleteStackTokens(token);
 		stack.push_back(new Token(buff, len));
+		delete[] buff;
 		break;
 	}
 	case '<': {
-		//getCharNumber(buff, length, tokenValues[0]);
 		char* buff;
 		short int len = countDigits(tokenValues[0]) + 1;
 		buff = new char[len];
 		sprintf_s(buff, len, "%d", tokenValues[0]);
-		//deleteStackTokens(token);
 		stack.push_back(new Token(buff, len));
+		delete[] buff;
 		break;
 	}
 	default:
@@ -509,160 +423,3 @@ int* LogicComponent::calcSortedArr(Token* token) {
 	insertionSort(tokenValues, arguments);
 	return tokenValues;
 }
-
-
-//Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
-//	bool isInsideFunction, short int* counter_operands = nullptr) {
-//	short int function_count = 0;
-//	Token* functionPointer = nullptr;
-//	short int functionArgs = 0;
-//
-//	while (token != nullptr) {
-//		if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
-//			outputList.push_back(token);
-//		}
-//		else {
-//			switch (token->symbols[0]) {
-//			case '+': case '-':
-//			case '*': case '/':
-//				replaceOperations(token); break;
-//				// functions
-//			case '?': case '~':
-//			case '<': case '>':
-//			{
-//				functionPointer = new Token(*token);
-//				functionArgs = 0;
-//				break;
-//			}
-//			case '(':
-//			{
-//				token = convertToONP(token->next, true,
-//					functionPointer != nullptr, &functionArgs);
-//				if (functionPointer) {
-//					functionPointer->arguments = functionArgs;
-//					stack.push_back(functionPointer);
-//					delete functionPointer;
-//				}
-//				functionPointer = nullptr;
-//				break;
-//			}
-//			case ',':
-//			{
-//				if (isInsideFunction && counter_operands) *counter_operands += 1;
-//				//Если стек закончился до того, как был встречен токен открывающая скобка, 
-//				//то в выражении пропущен разделитель аргументов функции (запятая), либо пропущена открывающая скобка.
-//				//Проверить это условие (написать код) !!!
-//				auto* end = stack.end();
-//				pullOutOperator(end);
-//				break;
-//			}
-//			case ')': {
-//
-//				// Если стек закончился до того, как был встречен токен открывающая скобка, то в выражении пропущена скобка.
-//				// Проверить условия (написать код) !!!
-//				auto* end = stack.end();
-//				pullOutOperator(end);
-//				end = stack.end();
-//				if (end != nullptr && end->symbols[0] == '(') {
-//					stack.pop_back();
-//					end = stack.end();
-//				}
-//				if (end != nullptr) {
-//					int prior = findPriority(end->symbols[0]);
-//					if (prior == 3) {
-//						outputList.push_back(end);
-//						stack.pop_back();
-//						end = stack.end();
-//					}
-//				}
-//				if (isInsideFunction && counter_operands) *counter_operands += 1;
-//				if (callFromConvert) return token;
-//				break;
-//			}
-//			default:
-//				break;
-//			}
-//			cout << "stack: ";
-//			stack.drawList(); cout << endl;
-//			cout << "outputlist: ";
-//			outputList.drawList(); cout << endl;
-//		}
-//		token = token->next;
-//	}
-//
-//	cout << "After while stack: " << endl;
-//	stack.drawList();
-//
-//	auto* end = stack.end();
-//	pullOutOperator(end);
-//	cout << endl;
-//	cout << "After while ouputlist: " << endl;
-//	outputList.drawList();
-//	cout << endl;
-//	return nullptr;
-//}
-
-
-
-
-
-
-
-
-
-//short int prior = findPriority(token->symbols[0]);
-//if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
-//	outputList.push_back(token);
-//}
-//else if (prior == 1 || prior == 2) {
-//	replaceOperations(token);
-//}
-//else if (prior == 3) {
-//	functionPointer = new Token(*token);
-//	functionArgs = 0;
-//}
-//else if (prior == 4 && token->symbols[0] == '(') {
-//	token = convertToONP(token->next, true,
-//		functionPointer != nullptr, &functionArgs);
-//	if (functionPointer) {
-//		functionPointer->arguments = functionArgs;
-//		stack.push_back(functionPointer);
-//		delete functionPointer;
-//	}
-//	functionPointer = nullptr;
-//}
-//else if (prior == 4 && token->symbols[0] == ')') {
-//	auto* end = stack.end();
-//	pullOutOperator(end);
-//	end = stack.end();
-//	if (end != nullptr && end->symbols[0] == '(') {
-//		stack.pop_back();
-//		end = stack.end();
-//	}
-//	if (end != nullptr) {
-//		int prior = findPriority(end->symbols[0]);
-//		if (prior == 3) {
-//			outputList.push_back(end);
-//			stack.pop_back();
-//			end = stack.end();
-//		}
-//	}
-//	if (isInsideFunction && counter_operands) *counter_operands += 1;
-//	if (callFromConvert) return token;
-//	break;
-//}
-//else if (token->symbols[0] == ',' && isInsideFunction && counter_operands) {
-//	if (isInsideFunction && counter_operands) *counter_operands += 1;
-//	//Если стек закончился до того, как был встречен токен открывающая скобка, 
-//	//то в выражении пропущен разделитель аргументов функции (запятая), либо пропущена открывающая скобка.
-//	//Проверить это условие (написать код) !!!
-//	pullOutOperator(stack.end());
-//}
-//else {
-//
-//}
-//cout << "stack: ";
-//stack.drawList(); cout << endl;
-//cout << "outputlist: ";
-//outputList.drawList(); cout << endl;
-//token = token->next;

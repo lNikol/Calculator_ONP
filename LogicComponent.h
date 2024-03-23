@@ -10,14 +10,15 @@ private:
 	bool isERROR = false;
 
 public:
-	bool isNumber(const char* str);
+	static bool isNumber(const char* str);
 	Token* createToken(char* char_op, int& char_op_count);
 
-	void readInput(const char* input);
-	Token* convertToONP(Token* token, bool callFromConvert, bool isInsideFunction, short int* counter_operands);
-	void startConversion();
+	Token* convertToONP(Token* token, bool callFromConvert,
+		bool isInsideFunction, short int* counter_operands,
+		char* input, char* char_op, int& char_op_count, int& c);
+	void startConversion(char* input, const int& EQUATION_LENGTH);
 
-	short int findPriority(const char& s);
+	static short int findPriority(const char& s);
 	void replaceOperations(Token* token);
 	void pullOutOperator(Token* end);
 	void doCalculations();

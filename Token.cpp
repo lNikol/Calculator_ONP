@@ -26,7 +26,7 @@ Token::Token(char* symbs, const int& s) {
 }
 
 void Token::showToken() {
-	for (size_t i = 0; i < size; i++) {
+	for (size_t i = 0; i < size - 1; i++) {
 		switch (symbols[0]) {
 		case '?': {
 			printf("IF");
@@ -56,9 +56,7 @@ void Token::showToken() {
 }
 
 Token::~Token() {
-	//cout << "~Token(size:"<<size<<"): ";
 	if (symbols != nullptr) {
-		//cout << symbols[0] << "_" << arguments;
 		delete[] symbols;
 	}
 	size = 0;

@@ -7,11 +7,10 @@ public:
 	List();
 	Token* begin();
 	Token* end();
-	size_t GetSize();
 	void push_back(Token* t);
 	void deleteFirst();
 	void pop_back();
-	void drawList();
+	void drawList() const;
 	void drawReversedList();
 	~List();
 };
