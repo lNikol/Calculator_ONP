@@ -43,7 +43,7 @@ bool LogicComponent::isNumber(const char* str) {
 Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
 	int size = 2;
 	char* symbols = new char[size];
-	
+
 	if (strcmp(char_op, "MIN") == 0)
 	{
 		symbols[0] = '<';
@@ -112,7 +112,7 @@ void LogicComponent::readInput(const char* input) {
 				case '?': case '~':
 				case '<': case '>':
 				case ',': case '.':
-				case '(': case ')': 
+				case '(': case ')':
 				{
 					short int prior = findPriority(tm->symbols[0]);
 					if (prior == 1 || prior == 2) tm->arguments = 2;
@@ -146,8 +146,8 @@ short int LogicComponent::findPriority(const char& s) {
 
 void LogicComponent::replaceOperations(Token* token) {
 	Token* tmp = stack.end();
-	int tokenPrior = findPriority(token->symbols[0]);
-	int stackPrior = -1;
+	short int tokenPrior = findPriority(token->symbols[0]);
+	short int stackPrior = -1;
 	if (tmp != nullptr) {
 		stackPrior = findPriority(tmp->symbols[0]);
 	}
@@ -196,6 +196,11 @@ void LogicComponent::startConversion() {
 	inputList.~List();
 }
 
+
+
+
+
+
 Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 	bool isInsideFunction, short int* counter_operands = nullptr) {
 	Token* functionPointer = nullptr;
@@ -212,7 +217,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 			case '~':
 				replaceOperations(token); break;
 				// functions
-			case '?': 
+			case '?':
 				//stack.push_back(token); break;
 			case '<': case '>':
 			{
@@ -248,7 +253,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 							}
 						}
 						/*auto* end = stack.end();
-						
+
 						if (token->symbols[0] == ')' && end->prev->symbols[0]!='(') {
 							cout << "\n\n tutaj\n\n";
 							if (findPriority(end->symbols[0]) == 3) {
@@ -259,10 +264,10 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 						delete functionPointer;
 					}
 					functionPointer = nullptr;
-					
+
 				}
 				else return nullptr;
-			
+
 				break;
 			}
 			case ')': {
@@ -270,7 +275,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				// Если стек закончился до того, как был встречен токен открывающая скобка, то в выражении пропущена скобка.
 				// Проверить условия (написать код) !!!
 				pullOutOperator(stack.end());
-				
+
 				if (isInsideFunction && counter_operands) *counter_operands += 1;
 				if (callFromConvert) return token;
 				break;
@@ -290,7 +295,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				//Если стек закончился до того, как был встречен токен открывающая скобка, 
 				//то в выражении пропущен разделитель аргументов функции (запятая), либо пропущена открывающая скобка.
 				//Проверить это условие (написать код) !!!
-				
+
 				break;
 			}
 			case '.': {
@@ -298,7 +303,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				pullOutOperator(stack.end());
 				//cout << "in . after pull\n\n";
 				outputList.drawList();
-				doCalculations(); 
+				doCalculations();
 				if (!isERROR) stack.drawReversedList();
 				else return nullptr;
 				break;
@@ -314,7 +319,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 		//cout << "outputlist: ";
 		//outputList.drawList();
 	}
-	
+
 
 
 	//cout << "AFTER:\nstack: ";
@@ -354,7 +359,7 @@ void LogicComponent::doCalculations() {
 
 				break;
 			}
-				// functions
+			// functions
 			case '~': case '?':
 			case '<': case '>':
 			{
@@ -397,7 +402,7 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		}
 		case '/': {
 			if (secondVal == 0) {
-				cout << "ERROR\n"; 
+				cout << "ERROR\n";
 				stack.~List();
 				outputList.~List();
 				inputList.~List();
@@ -415,7 +420,7 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		char* buff = new char[length];
 		sprintf_s(buff, length, "%d", res);
 		//getCharNumber(buff, length, res);
-		
+
 		result = new Token(buff, length);
 		stack.push_back(result);
 
@@ -452,9 +457,9 @@ void LogicComponent::ifFunc() {
 	stack.pop_back();
 	Token* a = new Token(*stack.end());
 	stack.pop_back();
-	
+
 	atoi(a->symbols) > 0 ? stack.push_back(new Token(*b)) : stack.push_back(new Token(*c));
-	
+
 	delete a, b, c;
 
 }

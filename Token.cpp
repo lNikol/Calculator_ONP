@@ -34,7 +34,7 @@ void Token::showToken() {
 			break;
 		}
 		case '>': {
-			printf("MAX%d",arguments);
+			printf("MAX%d", arguments);
 			++i;
 			break;
 		}

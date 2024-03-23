@@ -27,7 +27,7 @@ void List::push_back(Token* t) {
 
 void List::pop_back() {
 	if (first == nullptr) {
-		 return;
+		return;
 	}
 	Token* tmp = first;
 	while (tmp->next != nullptr && tmp->next->next != nullptr) {
@@ -49,10 +49,10 @@ void List::pop_back() {
 void List::drawList() {
 	if (first == nullptr) return;
 	Token* tmp = first;
+	tmp->showToken();
 	while (tmp->next != nullptr) {
-		tmp->showToken();
-		printf(" ");
 		tmp = tmp->next;
+		tmp->showToken();
 	}
 	cout << endl;
 }
@@ -76,7 +76,7 @@ void List::deleteFirst() {
 	Token* tmp = first;
 	if (tmp == nullptr) return;
 	if (first->next != nullptr) first = first->next;
-	else if(tmp == first){
+	else if (tmp == first) {
 		first = nullptr;
 		tmp->prev = nullptr;
 		delete tmp;
