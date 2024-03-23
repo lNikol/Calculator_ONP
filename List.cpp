@@ -22,7 +22,7 @@ void List::push_back(Token* t) {
 		tmp->next = new Token(*t);
 		tmp->next->prev = tmp;
 	}
-	size++;
+	++size;
 }
 
 void List::pop_back() {
@@ -42,7 +42,7 @@ void List::pop_back() {
 		delete first;
 		first = nullptr;
 	}
-	size--;
+	--size;
 }
 
 void List::drawList() const {
@@ -65,7 +65,6 @@ void List::drawReversedList() {
 	while (tmp->prev != nullptr) {
 		tmp = tmp->prev;
 		tmp->showToken();
-
 	}
 	printf("\n");
 }

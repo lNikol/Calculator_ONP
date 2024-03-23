@@ -10,7 +10,7 @@ short int countDigits(int number) {
 	short int count = number > 0 ? 0 : 1;
 	while (number != 0) {
 		number /= 10;
-		count++;
+		++count;
 	}
 	return count;
 }
@@ -18,7 +18,7 @@ short int countDigits(int number) {
 void insertionSort(int arr[], const short int& n)
 {
 	int i, key, j;
-	for (i = 1; i < n; i++) {
+	for (i = 1; i < n; ++i) {
 		key = arr[i];
 		j = i - 1;
 		while (j >= 0 && arr[j] > key) {
@@ -30,7 +30,7 @@ void insertionSort(int arr[], const short int& n)
 }
 
 bool LogicComponent::isNumber(const char* str) {
-	for (int i = 0; str[i] != '\0'; i++) {
+	for (int i = 0; str[i] != '\0'; ++i) {
 		if (!isdigit(str[i])) {
 			return false;
 		}
@@ -42,21 +42,21 @@ Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
 	int size = 2;
 	char* symbols = new char[size];
 
-	if (strcmp(char_op, "MIN") == 0)
+	if (char_op[1] == 'I')
 	{
 		symbols[0] = '<';
 		symbols[1] = '\0';
 	}
-	else if (strcmp(char_op, "MAX") == 0)
+	else if (char_op[1] == 'A')
 	{
 		symbols[0] = '>';
 		symbols[1] = '\0';
 	}
-	else if (strcmp(char_op, "IF") == 0) {
+	else if (char_op[0] == 'I') {
 		symbols[0] = '?';
 		symbols[1] = '\0';
 	}
-	else if (strcmp(char_op, "N") == 0) {
+	else if (char_op[0] == 'N') {
 		symbols[0] = '~';
 		symbols[1] = '\0';
 	}
@@ -64,14 +64,14 @@ Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
 		delete[] symbols;
 		size = char_op_count;
 		symbols = new char[size];
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < size; ++i) {
 			symbols[i] = char_op[i];
 		}
 	}
 
 
 	Token* temp = new Token(symbols, size);
-	for (int i = 0; i < char_op_count; i++) {
+	for (int i = 0; i < char_op_count; ++i) {
 		char_op[i] = -51; // default undefined value for char
 	}
 	char_op_count = 0;
@@ -142,7 +142,6 @@ void LogicComponent::startConversion(char* input) {
 	int char_op_count = 0;
 	int c = 0;
 	convertToONP(nullptr, false, false, nullptr, input, char_op, char_op_count, c);
-	//delete[] input;
 	stack.~List();
 	outputList.~List();
 }
@@ -163,9 +162,8 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				else return nullptr;
 			}
 			else {
-				if(char_op_count < CHAR_OP_LENGTH)char_op[char_op_count++] = input[c];
+				if(char_op_count < CHAR_OP_LENGTH) char_op[char_op_count++] = input[c];
 			}
-
 		}
 
 		else if (input[c] == '\n') {
@@ -176,10 +174,8 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 
 			if (tm->symbols[0] != '\0' && isNumber(tm->symbols)) {
 				outputList.push_back(tm);
-				char_op_count = 0;
 			}
 			else {
-				char_op_count = 0;
 				switch (tm->symbols[0]) {
 				case '+': case '-':
 				case '*': case '/':
@@ -237,7 +233,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 			if (tm != nullptr) delete tm;
 			// sprawdzic memory leak i jak dziala bez warunku na zamkniety nawias
 		}
-		c++;
+		++c;
 	}
 	return nullptr;
 }
@@ -311,7 +307,7 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		}
 		case '/': {
 			if (secondVal == 0) {
-				cout << "ERROR\n";
+				printf("ERROR\n");
 				stack.~List();
 				outputList.~List();
 				isERROR = true;
@@ -365,15 +361,12 @@ void LogicComponent::ifFunc() {
 	Token* res;
 	if (atoi(a->symbols) > 0) {
 		res = new Token(*b);
-		stack.push_back(res);
-		delete res;
 	}
 	else {
 		res = new Token(*c);
-		stack.push_back(res);
-		delete res;
 	}
-
+	stack.push_back(res);
+	delete res;
 	delete a, b, c;
 
 }
@@ -381,24 +374,30 @@ void LogicComponent::ifFunc() {
 void LogicComponent::minMaxFunc(Token* token) {
 	int* tokenValues = calcSortedArr(token);
 	short int arguments = token->arguments;
+	int max = tokenValues[0];
+	int min = tokenValues[0];
+	for (short int i = 0; i < arguments; ++i) {
+		if (tokenValues[i] > max) max = tokenValues[i];
+		if (tokenValues[i] < min) min = tokenValues[i];
+	}
 
 	switch (token->symbols[0])
 	{
 	case '>':
 	{
 		char* buff;
-		short int len = countDigits(tokenValues[arguments - 1]) + 1;
+		short int len = countDigits(max) + 1;
 		buff = new char[len];
-		sprintf_s(buff, len, "%d", tokenValues[arguments - 1]);
+		sprintf_s(buff, len, "%d", max);
 		stack.push_back(new Token(buff, len));
 		delete[] buff;
 		break;
 	}
 	case '<': {
 		char* buff;
-		short int len = countDigits(tokenValues[0]) + 1;
+		short int len = countDigits(min) + 1;
 		buff = new char[len];
-		sprintf_s(buff, len, "%d", tokenValues[0]);
+		sprintf_s(buff, len, "%d", min);
 		stack.push_back(new Token(buff, len));
 		delete[] buff;
 		break;
@@ -412,12 +411,13 @@ void LogicComponent::minMaxFunc(Token* token) {
 int* LogicComponent::calcSortedArr(Token* token) {
 	short int arguments = token->arguments;
 	int* tokenValues = new int[arguments];
-	for (short int i = 0; i < arguments; i++) {
-		if (stack.end() != nullptr) {
-			tokenValues[i] = atoi(stack.end()->symbols);
+	for (short int i = 0; i < arguments; ++i) {
+		Token* end = stack.end();
+		if (end != nullptr) {
+			tokenValues[i] = atoi(end->symbols);
 			stack.pop_back();
 		}
 	}
-	insertionSort(tokenValues, arguments);
+	//insertionSort(tokenValues, arguments);
 	return tokenValues;
 }

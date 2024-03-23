@@ -12,14 +12,12 @@ int main()
 	int lines = 0;
 	cin >> lines;
 	cin.ignore();
-	const int EQUATION_LENGTH = 100000;
+	const int EQUATION_LENGTH = 150000;
 	char* input = new char[EQUATION_LENGTH];
 
-	for (int i = 0; i < lines; i++) {
+	for (int i = 0; i < lines; ++i) {
 		fgets(input, EQUATION_LENGTH, stdin);
 		printf("\n");
 		logic.startConversion(input);
 	}
-
-
 }

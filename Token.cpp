@@ -8,7 +8,20 @@ Token::Token(const Token& t) {
 	arguments = t.arguments;
 	index = t.index;
 	symbols = new char[size];
-	for (size_t i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; ++i) {
+		symbols[i] = t.symbols[i];
+	}
+	next = nullptr;
+	prev = nullptr;
+}
+
+
+Token::Token(Token&& t) {
+	size = t.size;
+	arguments = t.arguments;
+	index = t.index;
+	symbols = new char[size];
+	for (size_t i = 0; i < size; ++i) {
 		symbols[i] = t.symbols[i];
 	}
 	next = nullptr;
@@ -19,14 +32,14 @@ Token::Token(char* symbs, const int& s) {
 	next = nullptr;
 	prev = nullptr;
 	symbols = new char[s];
-	for (int i = 0; i < s; i++) {
+	for (int i = 0; i < s; ++i) {
 		symbols[i] = symbs[i];
-		size++;
+		++size;
 	}
 }
 
 void Token::showToken() {
-	for (size_t i = 0; i < size - 1; i++) {
+	for (size_t i = 0; i < size - 1; ++i) {
 		switch (symbols[0]) {
 		case '?': {
 			printf("IF");
@@ -45,7 +58,7 @@ void Token::showToken() {
 		}
 		case '~': {
 			printf("N");
-			i++;
+			++i;
 			break;
 		}
 		default: printf("%c", symbols[i]); break;
@@ -60,4 +73,16 @@ Token::~Token() {
 		delete[] symbols;
 	}
 	size = 0;
+}
+Token& Token::operator=(Token&& t) {
+	size = t.size;
+	arguments = t.arguments;
+	index = t.index;
+	symbols = new char[size];
+	for (size_t i = 0; i < size; ++i) {
+		symbols[i] = t.symbols[i];
+	}
+	next = nullptr;
+	prev = nullptr;
+	return *this;
 }
