@@ -136,9 +136,8 @@ void LogicComponent::pullOutOperator(Token* end) {
 	}
 }
 
-void LogicComponent::startConversion(char* input, const int& EQUATION_LENGTH) {
+void LogicComponent::startConversion(char* input) {
 	isERROR = false;
-	const short int CHAR_OP_LENGTH = 20; // 19 dlugosc int + 1
 	char char_op[CHAR_OP_LENGTH];
 	int char_op_count = 0;
 	int c = 0;
@@ -164,7 +163,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				else return nullptr;
 			}
 			else {
-				char_op[char_op_count++] = input[c];
+				if(char_op_count < CHAR_OP_LENGTH)char_op[char_op_count++] = input[c];
 			}
 
 		}
@@ -315,7 +314,6 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 				cout << "ERROR\n";
 				stack.~List();
 				outputList.~List();
-				inputList.~List();
 				isERROR = true;
 				return;
 			}
@@ -369,7 +367,7 @@ void LogicComponent::ifFunc() {
 		res = new Token(*b);
 		stack.push_back(res);
 		delete res;
-	}  
+	}
 	else {
 		res = new Token(*c);
 		stack.push_back(res);

@@ -58,7 +58,7 @@ void List::drawList() const {
 	printf("\n");
 }
 
-void List::drawReversedList(){
+void List::drawReversedList() {
 	Token* tmp = end();
 	if (tmp == nullptr) return;
 	tmp->showToken();
