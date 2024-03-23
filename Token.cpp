@@ -4,25 +4,6 @@
 using namespace std;
 
 Token::Token(const Token& t) {
-	if (&t != nullptr) {
-		size = t.size;
-		arguments = t.arguments;
-		index = t.index;
-		symbols = new char[size];
-		for (size_t i = 0; i < size; ++i) {
-			symbols[i] = t.symbols[i];
-		}
-		next = nullptr;
-		prev = nullptr;
-	}
-	else {
-		next = nullptr;
-		prev = nullptr;
-	}
-}
-
-
-Token::Token(const Token&& t) {
 	size = t.size;
 	arguments = t.arguments;
 	index = t.index;
@@ -32,7 +13,9 @@ Token::Token(const Token&& t) {
 	}
 	next = nullptr;
 	prev = nullptr;
+	
 }
+
 
 Token::Token(char* symbs, const int& s) {
 	next = nullptr;
@@ -79,6 +62,8 @@ Token::~Token() {
 		delete[] symbols;
 	}
 	size = 0;
+	arguments = -1;
+	index = -1;
 }
 Token& Token::operator=(Token&& t) {
 	size = t.size;

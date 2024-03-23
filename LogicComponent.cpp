@@ -162,7 +162,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				else return nullptr;
 			}
 			else {
-				if(char_op_count < CHAR_OP_LENGTH) char_op[char_op_count++] = input[c];
+				if (char_op_count < CHAR_OP_LENGTH) char_op[char_op_count++] = input[c];
 			}
 		}
 
@@ -325,7 +325,7 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		sprintf_s(buff, length, "%d", res);
 
 		stack.push_back(new Token(buff, length));
-
+	
 		if (buff != nullptr) delete[] buff;
 		if (first != nullptr) delete first;
 		if (second != nullptr) delete second;

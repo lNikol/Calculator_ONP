@@ -12,7 +12,7 @@ int main()
 	int lines = 0;
 	cin >> lines;
 	cin.ignore();
-	const int EQUATION_LENGTH = 150000;
+	const int EQUATION_LENGTH = 250000;
 	char* input = new char[EQUATION_LENGTH];
 
 	for (int i = 0; i < lines; ++i) {
