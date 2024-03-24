@@ -25,6 +25,7 @@ Token::Token(char* symbs, const int& s) {
 		symbols[i] = symbs[i];
 		++size;
 	}
+	
 }
 
 void Token::showToken() {
@@ -45,7 +46,7 @@ void Token::showToken() {
 			++i;
 			break;
 		}
-		case '~': {
+		case 'N': {
 			printf("N");
 			++i;
 			break;

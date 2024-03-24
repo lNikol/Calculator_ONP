@@ -7,7 +7,7 @@ private:
 	List stack;
 	List outputList;
 	bool isERROR = false;
-	static const short int CHAR_OP_LENGTH = 20; // 19 dlugosc int + 1
+	static const int CHAR_OP_LENGTH = 20; // 19 dlugosc int + 1
 
 
 public:
@@ -15,11 +15,11 @@ public:
 	Token* createToken(char* char_op, int& char_op_count);
 
 	Token* convertToONP(Token* token, bool callFromConvert,
-		bool isInsideFunction, short int* counter_operands,
+		bool isInsideFunction, int* counter_operands,
 		char* input, char* char_op, int& char_op_count, int& c);
 	void startConversion(char* input);
 
-	static short int findPriority(const char& s);
+	static int findPriority(const char& s);
 	void replaceOperations(Token* token);
 	void pullOutOperator(Token* end);
 	void doCalculations();

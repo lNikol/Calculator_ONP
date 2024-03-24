@@ -4,10 +4,9 @@
 #include <cstring>
 using namespace std;
 
-
-short int countDigits(int number) {
+int countDigits(int number) {
 	if (number == 0) return 1;
-	short int count = number > 0 ? 0 : 1;
+	int count = number > 0 ? 0 : 1;
 	while (number != 0) {
 		number /= 10;
 		++count;
@@ -15,7 +14,7 @@ short int countDigits(int number) {
 	return count;
 }
 
-void insertionSort(int arr[], const short int& n)
+void insertionSort(int arr[], const int& n)
 {
 	int i, key, j;
 	for (i = 1; i < n; ++i) {
@@ -57,7 +56,7 @@ Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
 		symbols[1] = '\0';
 	}
 	else if (char_op[0] == 'N') {
-		symbols[0] = '~';
+		symbols[0] = 'N';
 		symbols[1] = '\0';
 	}
 	else {
@@ -79,12 +78,12 @@ Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
 	return temp;
 }
 
-short int LogicComponent::findPriority(const char& s) {
+int LogicComponent::findPriority(const char& s) {
 	switch (s) {
 	case '+': case '-': return 1;
 	case '*': case '/': return 2;
 
-	case '?': case '<': case '~': case '>': return 3; // negacja right associative
+	case '?': case '<': case 'N': case '>': return 3; // negacja right associative
 
 	case'(': case ')': return 4;
 	default: return -1;
@@ -93,15 +92,15 @@ short int LogicComponent::findPriority(const char& s) {
 
 void LogicComponent::replaceOperations(Token* token) {
 	Token* tmp = stack.end();
-	short int tokenPrior = findPriority(token->symbols[0]);
-	short int stackPrior = -1;
+	int tokenPrior = findPriority(token->symbols[0]);
+	int stackPrior = -1;
 	if (tmp != nullptr) {
 		stackPrior = findPriority(tmp->symbols[0]);
 	}
 
 	while (tmp != nullptr && stackPrior != -1 && stackPrior <= 3 && stackPrior >= tokenPrior) {
 		if (tokenPrior != -1) {
-			if (token->symbols[0] != '~') {
+			if (token->symbols[0] != 'N') {
 				outputList.push_back(tmp);
 				stack.pop_back();
 				tmp = stack.end();
@@ -128,7 +127,7 @@ void LogicComponent::pullOutOperator(Token* end) {
 	}
 	if (end != nullptr) {
 		int prior = findPriority(end->symbols[0]);
-		if (prior == 3 && end->symbols[0] != '~') {
+		if (prior == 3 && end->symbols[0] != 'N') {
 			outputList.push_back(end);
 			stack.pop_back();
 			end = stack.end();
@@ -148,10 +147,10 @@ void LogicComponent::startConversion(char* input) {
 
 
 Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
-	bool isInsideFunction, short int* counter_operands,
+	bool isInsideFunction, int* counter_operands,
 	char* input, char* char_op, int& char_op_count, int& c) {
 	Token* functionPointer = nullptr;
-	short int functionArgs = 0;
+	int functionArgs = 0;
 	while (input[c] != '\0' && !isERROR) {
 		if (input[c] != ' ') {
 			if (input[c] == '.') {
@@ -170,7 +169,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 		}
 		else {
 			char_op[char_op_count++] = '\0';
-			Token* tm = (token == nullptr) ? createToken(char_op, char_op_count) : new Token(*token);
+			Token* tm = createToken(char_op, char_op_count);
 
 			if (tm->symbols[0] != '\0' && isNumber(tm->symbols)) {
 				outputList.push_back(tm);
@@ -179,7 +178,7 @@ Token* LogicComponent::convertToONP(Token* token, bool callFromConvert,
 				switch (tm->symbols[0]) {
 				case '+': case '-':
 				case '*': case '/':
-				case '~':
+				case 'N':
 					replaceOperations(tm);
 					break;
 					// functions
@@ -267,7 +266,7 @@ void LogicComponent::doCalculations() {
 				break;
 			}
 			// functions
-			case '~': case '?':
+			case 'N': case '?':
 			case '<': case '>':
 			{
 				token->showToken();
@@ -291,7 +290,7 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		int firstVal = atoi(first->symbols);
 		int secondVal = atoi(second->symbols);
 		int res = 0;
-		short int length;
+		int length;
 		switch (s) {
 		case '+': {
 			res = firstVal + secondVal;
@@ -330,12 +329,11 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		if (first != nullptr) delete first;
 		if (second != nullptr) delete second;
 	}
-
 }
 
 void LogicComponent::doFunction(Token* token) {
 	switch (token->symbols[0]) {
-	case '~': {
+	case 'N': {
 		char zero[] = "0";
 		Token* tmp = new Token(zero, strlen(zero) + 1);
 		Token* first = new Token(*stack.end());
@@ -373,10 +371,10 @@ void LogicComponent::ifFunc() {
 
 void LogicComponent::minMaxFunc(Token* token) {
 	int* tokenValues = calcSortedArr(token);
-	short int arguments = token->arguments;
+	int arguments = token->arguments;
 	int max = tokenValues[0];
 	int min = tokenValues[0];
-	for (short int i = 0; i < arguments; ++i) {
+	for (int i = 0; i < arguments; ++i) {
 		if (tokenValues[i] > max) max = tokenValues[i];
 		if (tokenValues[i] < min) min = tokenValues[i];
 	}
@@ -386,7 +384,7 @@ void LogicComponent::minMaxFunc(Token* token) {
 	case '>':
 	{
 		char* buff;
-		short int len = countDigits(max) + 1;
+		int len = countDigits(max) + 1;
 		buff = new char[len];
 		sprintf_s(buff, len, "%d", max);
 		stack.push_back(new Token(buff, len));
@@ -395,7 +393,7 @@ void LogicComponent::minMaxFunc(Token* token) {
 	}
 	case '<': {
 		char* buff;
-		short int len = countDigits(min) + 1;
+		int len = countDigits(min) + 1;
 		buff = new char[len];
 		sprintf_s(buff, len, "%d", min);
 		stack.push_back(new Token(buff, len));
@@ -409,9 +407,9 @@ void LogicComponent::minMaxFunc(Token* token) {
 }
 
 int* LogicComponent::calcSortedArr(Token* token) {
-	short int arguments = token->arguments;
+	int arguments = token->arguments;
 	int* tokenValues = new int[arguments];
-	for (short int i = 0; i < arguments; ++i) {
+	for (int i = 0; i < arguments; ++i) {
 		Token* end = stack.end();
 		if (end != nullptr) {
 			tokenValues[i] = atoi(end->symbols);
