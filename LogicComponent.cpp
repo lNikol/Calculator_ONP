@@ -122,7 +122,6 @@ void LogicComponent::pullOutOperator(Token* end, bool isParenth) {
 			}
 		}
 	}
-	
 }
 
 void LogicComponent::startConversion(char* input) {
@@ -144,7 +143,7 @@ Token* LogicComponent::convertToONP(bool callFromConvert,
 	while (input[c] != '\0' && !isERROR) {
 		if (input[c] != ' ') {
 			if (input[c] == '.') {
-				pullOutOperator(stack.end(), false);
+				pullOutOperator(stack.end(), true);
 				outputList.drawList();
 				doCalculations();
 				if (!isERROR) stack.drawReversedList();
@@ -180,7 +179,7 @@ Token* LogicComponent::convertToONP(bool callFromConvert,
 				case '(':
 				{
 					stack.push_back(tm);
-					convertToONP(true,	functionPointer != nullptr, &functionArgs, 
+					convertToONP(true, functionPointer != nullptr, &functionArgs,
 						input, char_op, char_op_count, ++c);
 
 					if (!isERROR) {
@@ -306,7 +305,7 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		sprintf_s(buff, length, "%d", res);
 
 		stack.push_back(new Token(buff, length));
-	
+
 		if (buff != nullptr) delete[] buff;
 		if (first != nullptr) delete first;
 		if (second != nullptr) delete second;
