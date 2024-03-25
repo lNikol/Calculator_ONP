@@ -23,8 +23,9 @@ bool LogicComponent::isNumber(const char* str) {
 	return true;
 }
 
-Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
-	int size = 2;
+Token* LogicComponent::createToken(char* char_op) {
+	short int size = 2;
+	short int char_op_count = 0;
 	char* symbols = new char[size];
 
 	if (char_op[1] == 'I')
@@ -47,23 +48,30 @@ Token* LogicComponent::createToken(char* char_op, int& char_op_count) {
 	}
 	else {
 		delete[] symbols;
-		size = char_op_count;
+		while (char_op[char_op_count] != '\0' && char_op[char_op_count]>0) {
+			char_op_count++;
+		}
+		size = char_op_count + 1;
 		symbols = new char[size];
-		for (int i = 0; i < size; ++i) {
+
+		for (int i = 0; i < size - 1; ++i) {
 			symbols[i] = char_op[i];
 		}
+		symbols[size - 1] = '\0';
 	}
-
 
 	Token* temp = new Token(symbols, size);
-	for (int i = 0; i < char_op_count; ++i) {
-		char_op[i] = -51; // default undefined value for char
-	}
-	char_op_count = 0;
 	delete[] symbols;
 	return temp;
 }
 
+void LogicComponent::setNewTempToken(char*& tok) {
+	if (tok != nullptr) {
+		delete[] tok;
+	}
+	tok = new char[CHAR_OP_LENGTH];
+	scanf_s("%19s", tok, CHAR_OP_LENGTH);
+}
 short int LogicComponent::findPriority(const char& s) {
 	switch (s) {
 	case '+': case '-': return 1;
@@ -124,42 +132,38 @@ void LogicComponent::pullOutOperator(Token* end, bool isParenth) {
 	}
 }
 
-void LogicComponent::startConversion(char* input) {
+void LogicComponent::startConversion() {
 	isERROR = false;
-	char char_op[CHAR_OP_LENGTH];
-	int char_op_count = 0;
-	int c = 0;
-	convertToONP(false, false, nullptr, input, char_op, char_op_count, c);
+	char* char_op = new char[CHAR_OP_LENGTH];
+	scanf_s("%19s", char_op, CHAR_OP_LENGTH);
+	printf("\n");
+	convertToONP(false, false, nullptr, char_op);
+	if (char_op != nullptr) delete[] char_op;
 	stack.~List();
 	outputList.~List();
 }
 
 
-Token* LogicComponent::convertToONP(bool callFromConvert,
-	bool isInsideFunction, short int* counter_operands,
-	char* input, char* char_op, int& char_op_count, int& c) {
+Token* LogicComponent::convertToONP(bool callFromConvert, bool isInsideFunction,
+	short int* counter_operands, char*& char_op) {
 	Token* functionPointer = nullptr;
 	short int functionArgs = 0;
-	while (input[c] != '\0' && !isERROR) {
-		if (input[c] != ' ') {
-			if (input[c] == '.') {
-				pullOutOperator(stack.end(), true);
-				outputList.drawList();
-				doCalculations();
-				if (!isERROR) stack.drawReversedList();
-				else return nullptr;
-			}
-			else {
-				if (char_op_count < CHAR_OP_LENGTH) char_op[char_op_count++] = input[c];
-			}
+	while (char_op[0] != '\0' && !isERROR) {
+		if (char_op[0] == '.') {
+			pullOutOperator(stack.end(), true);
+			outputList.drawList();
+			doCalculations();
+			char_op[0] = '\0';
+			if (!isERROR) stack.drawReversedList();
+			else return nullptr;
 		}
 
-		else if (input[c] == '\n') {
+		else if (char_op[0] == '\n') {
+			cout << "\\n\n";
 		}
 		else {
-			char_op[char_op_count++] = '\0';
-			Token* tm = createToken(char_op, char_op_count);
-
+			Token* tm = createToken(char_op);
+			setNewTempToken(char_op);
 			if (tm->symbols[0] != '\0' && isNumber(tm->symbols)) {
 				outputList.push_back(tm);
 			}
@@ -179,8 +183,7 @@ Token* LogicComponent::convertToONP(bool callFromConvert,
 				case '(':
 				{
 					stack.push_back(tm);
-					convertToONP(true, functionPointer != nullptr, &functionArgs,
-						input, char_op, char_op_count, ++c);
+					convertToONP(true, functionPointer != nullptr, &functionArgs, char_op);
 
 					if (!isERROR) {
 						if (functionPointer) {
@@ -213,7 +216,6 @@ Token* LogicComponent::convertToONP(bool callFromConvert,
 			}
 			if (tm != nullptr) delete tm;
 		}
-		++c;
 	}
 	return nullptr;
 }

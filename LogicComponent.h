@@ -12,12 +12,11 @@ private:
 
 public:
 	static bool isNumber(const char* str);
-	Token* createToken(char* char_op, int& char_op_count);
+	Token* createToken(char* char_op);
 
-	Token* convertToONP(bool callFromConvert,
-		bool isInsideFunction, short int* counter_operands,
-		char* input, char* char_op, int& char_op_count, int& c);
-	void startConversion(char* input);
+	Token* convertToONP(bool callFromConvert, bool isInsideFunction, 
+		short int* counter_operands, char*& char_op);
+	void startConversion();
 
 	static short int findPriority(const char& s);
 	void replaceOperations(Token* token);
@@ -29,4 +28,6 @@ public:
 	void minMaxFunc(Token* token);
 	void deleteStackTokens(Token* token);
 	int* calcSortedArr(Token* token);
+
+	void setNewTempToken(char*& token);
 };

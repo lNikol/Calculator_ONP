@@ -7,17 +7,10 @@ using namespace std;
 int main()
 {
 	LogicComponent logic;
-	// sscanf() - ?
-
 	int lines = 0;
 	cin >> lines;
-	cin.ignore();
-	const int EQUATION_LENGTH = 7700000;
-	char* input = new char[EQUATION_LENGTH];
+	while (getchar() != '\n');
 	for (int i = 0; i < lines; ++i) {
-		fgets(input, EQUATION_LENGTH, stdin);
-		printf("\n");
-		logic.startConversion(input);
+		logic.startConversion();
 	}
-	delete[] input;
 }
