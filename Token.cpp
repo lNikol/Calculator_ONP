@@ -8,7 +8,7 @@ Token::Token(const Token& t) {
 	arguments = t.arguments;
 	index = t.index;
 	symbols = new char[size];
-	for (size_t i = 0; i < size; ++i) {
+	for (short int i = 0; i < size; ++i) {
 		symbols[i] = t.symbols[i];
 	}
 	next = nullptr;
@@ -27,7 +27,7 @@ Token::Token(char* symbs, const int& s) {
 }
 
 void Token::showToken() {
-	for (size_t i = 0; i < size - 1; ++i) {
+	for (short int i = 0; i < size - 1; ++i) {
 		switch (symbols[0]) {
 		case '?': {
 			printf("IF");
@@ -71,7 +71,7 @@ Token& Token::operator=(Token&& t) {
 	arguments = t.arguments;
 	index = t.index;
 	symbols = new char[size];
-	for (size_t i = 0; i < size; ++i) {
+	for (short int i = 0; i < size; ++i) {
 		symbols[i] = t.symbols[i];
 	}
 	next = nullptr;

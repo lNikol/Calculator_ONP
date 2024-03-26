@@ -89,11 +89,11 @@ void LogicComponent::startConversion() {
 	scanf_s("%19s", char_op, CHAR_OP_LENGTH);
 	printf("\n");
 	convertToONP(false, false, nullptr, char_op);
+	stack.~List();
+	outputList.~List();
 	if (char_op != nullptr) {
 		delete[] char_op;
 	}
-	stack.~List();
-	outputList.~List();
 }
 
 Token* LogicComponent::convertToONP(bool callFromConvert, bool isInsideFunction,
@@ -141,7 +141,7 @@ Token* LogicComponent::convertToONP(bool callFromConvert, bool isInsideFunction,
 				case '(': {
 					stack.push_back(tm);
 					convertToONP(true, functionPointer != nullptr, &functionArgs, char_op);
-
+					
 					if (!isERROR) {
 						if (functionPointer) {
 							functionPointer->arguments = functionArgs;
@@ -166,11 +166,11 @@ Token* LogicComponent::convertToONP(bool callFromConvert, bool isInsideFunction,
 					}
 					pullOutOperator(stack.end(), true);
 					if (callFromConvert) {
-						return tm;
+						delete tm;
+						return nullptr;
 					}
 					break;
 				}
-
 				default:break;
 				}
 			}
@@ -234,6 +234,7 @@ void LogicComponent::doCalculations() {
 	Token* token = outputList.begin();
 	while (token != nullptr && !isERROR) {
 		if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
+			token->showToken();
 			stack.push_back(token);
 			token = token->next;
 			outputList.deleteFirst();
@@ -250,11 +251,19 @@ void LogicComponent::doCalculations() {
 				Token* second = new Token(*stack.end());
 				stack.pop_back();
 				doOperation(token->symbols[0], second, first);
+				
 				if (!isERROR) {
 					token = token->next;
 					outputList.deleteFirst();
 				}
-				else return;
+				else {
+					outputList.deleteFirst();
+					if (first != nullptr) delete first;
+					if (second != nullptr) delete second;
+					first = nullptr;
+					second = nullptr;
+					return;
+				}
 				break;
 			}
 			// functions
@@ -264,11 +273,11 @@ void LogicComponent::doCalculations() {
 				token->showToken();
 				stack.drawReversedList();
 				doFunction(token);
-				if (!isERROR) {
-					token = token->next;
-					outputList.deleteFirst();
+				token = token->next;
+				outputList.deleteFirst();
+				if (isERROR) {
+					return;
 				}
-				else return;
 				break;
 			}
 			default:break;
@@ -314,10 +323,15 @@ void LogicComponent::doOperation(const char& s, Token* first, Token* second) {
 		length = countDigits(res) + 1;
 		char* buff = new char[length];
 		sprintf_s(buff, length, "%d", res);
+		Token* temp = new Token(buff, length);
+		stack.push_back(temp);
 
-		stack.push_back(new Token(buff, length));
-
+		if (temp != nullptr) delete temp;
 		if (buff != nullptr) delete[] buff;
+		if (first != nullptr) delete first;
+		if (second != nullptr) delete second;
+	}
+	else {
 		if (first != nullptr) delete first;
 		if (second != nullptr) delete second;
 	}
@@ -356,7 +370,7 @@ void LogicComponent::ifFunc() {
 	stack.pop_back();
 	Token* a = new Token(*stack.end());
 	stack.pop_back();
-	Token* res;
+	Token* res = nullptr;
 	if (atoi(a->symbols) > 0) {
 		res = new Token(*b);
 	}
@@ -365,7 +379,9 @@ void LogicComponent::ifFunc() {
 	}
 	stack.push_back(res);
 	delete res;
-	delete a, b, c;
+	delete a;
+	delete b;
+	delete c;
 }
 
 void LogicComponent::minMaxFunc(Token* token) {
@@ -388,7 +404,10 @@ void LogicComponent::minMaxFunc(Token* token) {
 		buff = new char[len];
 		// przepisuje maksymalna liczbe do buff
 		sprintf_s(buff, len, "%d", max);
-		stack.push_back(new Token(buff, len));
+		Token* temp = new Token(buff, len);
+		stack.push_back(temp);
+		if (temp != nullptr) delete temp;
+		delete[] buff;
 		break;
 	}
 	case '<': {
@@ -397,7 +416,9 @@ void LogicComponent::minMaxFunc(Token* token) {
 		buff = new char[len];
 		// przepisuje minimalna liczbe do buff
 		sprintf_s(buff, len, "%d", min);
-		stack.push_back(new Token(buff, len));
+		Token* temp = new Token(buff, len);
+		stack.push_back(temp);
+		if (temp != nullptr) delete temp;
 		delete[] buff;
 		break;
 	}

@@ -3,7 +3,7 @@
 class List {
 	Token* first = nullptr;
 	Token* last = nullptr;
-	size_t size = 0;
+	short int size = 0;
 public:
 	List();
 	Token* begin();
