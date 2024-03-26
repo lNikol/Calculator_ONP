@@ -13,19 +13,17 @@ Token::Token(const Token& t) {
 	}
 	next = nullptr;
 	prev = nullptr;
-	
 }
 
 
 Token::Token(char* symbs, const int& s) {
-	next = nullptr;
-	prev = nullptr;
 	symbols = new char[s];
 	for (int i = 0; i < s; ++i) {
 		symbols[i] = symbs[i];
 		++size;
 	}
-	
+	next = nullptr;
+	prev = nullptr;
 }
 
 void Token::showToken() {
@@ -51,11 +49,13 @@ void Token::showToken() {
 			++i;
 			break;
 		}
-		default: printf("%c", symbols[i]); break;
+		default: {
+			printf("%c", symbols[i]);
+			break;
+		}
 		}
 	}
 	printf(" ");
-
 }
 
 Token::~Token() {
@@ -63,8 +63,8 @@ Token::~Token() {
 		delete[] symbols;
 	}
 	size = 0;
-	arguments = -1;
-	index = -1;
+	arguments = 0;
+	index = 0;
 }
 Token& Token::operator=(Token&& t) {
 	size = t.size;

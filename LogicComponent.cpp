@@ -6,6 +6,7 @@ using namespace std;
 
 short int countDigits(int number) {
 	if (number == 0) return 1;
+	// sprawdzenie czy liczba ujemna, jesli ujemna to dodaje 1 i traktuje to jako minus
 	short int count = number > 0 ? 0 : 1;
 	while (number != 0) {
 		number /= 10;
@@ -14,7 +15,7 @@ short int countDigits(int number) {
 	return count;
 }
 
-bool LogicComponent::isNumber(const char* str) {
+bool isNumber(const char* str) {
 	for (int i = 0; str[i] != '\0'; ++i) {
 		if (!isdigit(str[i])) {
 			return false;
@@ -23,18 +24,34 @@ bool LogicComponent::isNumber(const char* str) {
 	return true;
 }
 
+short int LogicComponent::findPriority(const char& s) {
+	switch (s) {
+	case '+': case '-': return 1;
+	case '*': case '/': return 2;
+	case '?': case '<': case 'N': case '>': return 3; // negacja right associative
+	case'(': case ')': return 4;
+	default: return -1;
+	}
+}
+
+void LogicComponent::setNewTempToken(char*& tok) {
+	if (tok != nullptr) {
+		delete[] tok;
+	}
+	tok = new char[CHAR_OP_LENGTH];
+	scanf_s("%19s", tok, CHAR_OP_LENGTH);
+}
+
 Token* LogicComponent::createToken(char* char_op) {
 	short int size = 2;
 	short int char_op_count = 0;
 	char* symbols = new char[size];
 
-	if (char_op[1] == 'I')
-	{
+	if (char_op[1] == 'I') {
 		symbols[0] = '<';
 		symbols[1] = '\0';
 	}
-	else if (char_op[1] == 'A')
-	{
+	else if (char_op[1] == 'A') {
 		symbols[0] = '>';
 		symbols[1] = '\0';
 	}
@@ -48,7 +65,7 @@ Token* LogicComponent::createToken(char* char_op) {
 	}
 	else {
 		delete[] symbols;
-		while (char_op[char_op_count] != '\0' && char_op[char_op_count]>0) {
+		while (char_op[char_op_count] != '\0' && char_op[char_op_count] > 0) {
 			char_op_count++;
 		}
 		size = char_op_count + 1;
@@ -65,23 +82,104 @@ Token* LogicComponent::createToken(char* char_op) {
 	return temp;
 }
 
-void LogicComponent::setNewTempToken(char*& tok) {
-	if (tok != nullptr) {
-		delete[] tok;
+void LogicComponent::startConversion() {
+	isERROR = false;
+	char* char_op = new char[CHAR_OP_LENGTH];
+	// pobieranie pierwszego tokena
+	scanf_s("%19s", char_op, CHAR_OP_LENGTH);
+	printf("\n");
+	convertToONP(false, false, nullptr, char_op);
+	if (char_op != nullptr) {
+		delete[] char_op;
 	}
-	tok = new char[CHAR_OP_LENGTH];
-	scanf_s("%19s", tok, CHAR_OP_LENGTH);
+	stack.~List();
+	outputList.~List();
 }
-short int LogicComponent::findPriority(const char& s) {
-	switch (s) {
-	case '+': case '-': return 1;
-	case '*': case '/': return 2;
 
-	case '?': case '<': case 'N': case '>': return 3; // negacja right associative
+Token* LogicComponent::convertToONP(bool callFromConvert, bool isInsideFunction,
+	short int* counter_operands, char*& char_op) {
+	Token* functionPointer = nullptr;
+	short int functionArgs = 0;
+	while (char_op[0] != '\0' && !isERROR) {
+		if (char_op[0] == '.') {
+			pullOutOperator(stack.end(), true);
+			outputList.drawList();
+			doCalculations();
+			char_op[0] = '\0';
+			if (!isERROR) {
+				stack.drawReversedList();
+			}
+			else {
+				return nullptr;
+			}
+		}
+		else if (char_op[0] == '\n') {
+		}
+		else {
+			Token* tm = createToken(char_op);
+			setNewTempToken(char_op);
+			if (tm->symbols[0] != '\0' && isNumber(tm->symbols)) {
+				outputList.push_back(tm);
+			}
+			else {
+				switch (tm->symbols[0]) {
+				case '+': case '-':
+				case '*': case '/':
+				case 'N':
+				{
+					replaceOperations(tm);
+					break;
+				}
 
-	case'(': case ')': return 4;
-	default: return -1;
+				// functions
+				case '?': case '<':
+				case '>': {
+					functionPointer = new Token(*tm);
+					functionArgs = 0;
+					break;
+				}
+				case '(': {
+					stack.push_back(tm);
+					convertToONP(true, functionPointer != nullptr, &functionArgs, char_op);
+
+					if (!isERROR) {
+						if (functionPointer) {
+							functionPointer->arguments = functionArgs;
+							stack.push_back(functionPointer);
+							delete functionPointer;
+						}
+						functionPointer = nullptr;
+					}
+					else return nullptr;
+					break;
+				}
+				case ',': {
+					if (isInsideFunction && counter_operands) {
+						pullOutOperator(stack.end(), false);
+						*counter_operands += 1;
+					}
+					break;
+				}
+				case ')': {
+					if (isInsideFunction && counter_operands) {
+						*counter_operands += 1;
+					}
+					pullOutOperator(stack.end(), true);
+					if (callFromConvert) {
+						return tm;
+					}
+					break;
+				}
+
+				default:break;
+				}
+			}
+			if (tm != nullptr) {
+				delete tm;
+			}
+		}
 	}
+	return nullptr;
 }
 
 void LogicComponent::replaceOperations(Token* token) {
@@ -132,94 +230,6 @@ void LogicComponent::pullOutOperator(Token* end, bool isParenth) {
 	}
 }
 
-void LogicComponent::startConversion() {
-	isERROR = false;
-	char* char_op = new char[CHAR_OP_LENGTH];
-	scanf_s("%19s", char_op, CHAR_OP_LENGTH);
-	printf("\n");
-	convertToONP(false, false, nullptr, char_op);
-	if (char_op != nullptr) delete[] char_op;
-	stack.~List();
-	outputList.~List();
-}
-
-
-Token* LogicComponent::convertToONP(bool callFromConvert, bool isInsideFunction,
-	short int* counter_operands, char*& char_op) {
-	Token* functionPointer = nullptr;
-	short int functionArgs = 0;
-	while (char_op[0] != '\0' && !isERROR) {
-		if (char_op[0] == '.') {
-			pullOutOperator(stack.end(), true);
-			outputList.drawList();
-			doCalculations();
-			char_op[0] = '\0';
-			if (!isERROR) stack.drawReversedList();
-			else return nullptr;
-		}
-
-		else if (char_op[0] == '\n') {
-			cout << "\\n\n";
-		}
-		else {
-			Token* tm = createToken(char_op);
-			setNewTempToken(char_op);
-			if (tm->symbols[0] != '\0' && isNumber(tm->symbols)) {
-				outputList.push_back(tm);
-			}
-			else {
-				switch (tm->symbols[0]) {
-				case '+': case '-':
-				case '*': case '/':
-				case 'N':
-					replaceOperations(tm);
-					break;
-					// functions
-				case '?': case '<':
-				case '>':
-					functionPointer = new Token(*tm);
-					functionArgs = 0;
-					break;
-				case '(':
-				{
-					stack.push_back(tm);
-					convertToONP(true, functionPointer != nullptr, &functionArgs, char_op);
-
-					if (!isERROR) {
-						if (functionPointer) {
-							functionPointer->arguments = functionArgs;
-							stack.push_back(functionPointer);
-							delete functionPointer;
-						}
-						functionPointer = nullptr;
-					}
-					else return nullptr;
-					break;
-				}
-				case ',':
-				{
-					if (isInsideFunction && counter_operands) {
-						pullOutOperator(stack.end(), false);
-						*counter_operands += 1;
-					}
-					break;
-				}
-				case ')': {
-					if (isInsideFunction && counter_operands) *counter_operands += 1;
-					pullOutOperator(stack.end(), true);
-					if (callFromConvert) return tm;
-					break;
-				}
-
-				default:break;
-				}
-			}
-			if (tm != nullptr) delete tm;
-		}
-	}
-	return nullptr;
-}
-
 void LogicComponent::doCalculations() {
 	Token* token = outputList.begin();
 	while (token != nullptr && !isERROR) {
@@ -245,7 +255,6 @@ void LogicComponent::doCalculations() {
 					outputList.deleteFirst();
 				}
 				else return;
-
 				break;
 			}
 			// functions
@@ -324,10 +333,18 @@ void LogicComponent::doFunction(Token* token) {
 		doOperation('-', tmp, first);
 		break;
 	}
-
-	case '?': ifFunc(); break;
-	case '<': minMaxFunc(token); break;
-	case '>': minMaxFunc(token); break;
+	case '?': {
+		ifFunc();
+		break;
+	}
+	case '<': {
+		minMaxFunc(token);
+		break;
+	}
+	case '>': {
+		minMaxFunc(token);
+		break;
+	}
 	default: break;
 	}
 }
@@ -349,7 +366,6 @@ void LogicComponent::ifFunc() {
 	stack.push_back(res);
 	delete res;
 	delete a, b, c;
-
 }
 
 void LogicComponent::minMaxFunc(Token* token) {
@@ -358,33 +374,34 @@ void LogicComponent::minMaxFunc(Token* token) {
 	int max = tokenValues[0];
 	int min = tokenValues[0];
 	for (short int i = 0; i < arguments; ++i) {
-		if (tokenValues[i] > max) max = tokenValues[i];
-		if (tokenValues[i] < min) min = tokenValues[i];
+		if (tokenValues[i] > max) {
+			max = tokenValues[i];
+		}
+		if (tokenValues[i] < min) {
+			min = tokenValues[i];
+		}
 	}
-
-	switch (token->symbols[0])
-	{
-	case '>':
-	{
+	switch (token->symbols[0]) {
+	case '>': {
 		char* buff;
 		short int len = countDigits(max) + 1;
 		buff = new char[len];
+		// przepisuje maksymalna liczbe do buff
 		sprintf_s(buff, len, "%d", max);
 		stack.push_back(new Token(buff, len));
-		delete[] buff;
 		break;
 	}
 	case '<': {
-		char* buff;
 		short int len = countDigits(min) + 1;
+		char* buff;
 		buff = new char[len];
+		// przepisuje minimalna liczbe do buff
 		sprintf_s(buff, len, "%d", min);
 		stack.push_back(new Token(buff, len));
 		delete[] buff;
 		break;
 	}
-	default:
-		break;
+	default: break;
 	}
 	delete[] tokenValues;
 }

@@ -7,7 +7,9 @@ List::List() {
 }
 
 void List::push_back(Token* t) {
-	if (t == nullptr) return;
+	if (t == nullptr) {
+		return;
+	}
 
 	if (first == nullptr) {
 		first = new Token(*t);
@@ -17,20 +19,20 @@ void List::push_back(Token* t) {
 		++size;
 		return;
 	}
+
 	last->next = new Token(*t);
 	last->next->prev = last;
 	last = last->next;
 	++size;
-
 }
 
 void List::pop_back() {
 	if (first == nullptr) {
-		return; 
+		return;
 	}
 
 	--size;
-
+	// usuwam pierwszy (on jest ostatnim) element z listy
 	if (first->next == nullptr) {
 		delete first;
 		first = nullptr;
@@ -47,7 +49,9 @@ void List::pop_back() {
 }
 
 void List::drawList() const {
-	if (first == nullptr) return;
+	if (first == nullptr) {
+		return;
+	}
 	Token* tmp = first;
 	tmp->showToken();
 	printf(" ");
@@ -61,7 +65,9 @@ void List::drawList() const {
 
 void List::drawReversedList() {
 	Token* tmp = end();
-	if (tmp == nullptr) return;
+	if (tmp == nullptr) {
+		return;
+	}
 	tmp->showToken();
 	while (tmp->prev != nullptr) {
 		tmp = tmp->prev;
@@ -97,8 +103,12 @@ Token* List::begin() {
 }
 
 Token* List::end() {
-	if (last == nullptr) return nullptr;
-	else return last;
+	if (last == nullptr) {
+		return nullptr;
+	}
+	else {
+		return last;
+	}
 }
 
 List::~List() {
