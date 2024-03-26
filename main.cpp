@@ -12,8 +12,5 @@ int main()
 	while (getchar() != '\n');
 	for (int i = 0; i < lines; ++i) {
 		logic.startConversion();
-
-
-
 	}
 }

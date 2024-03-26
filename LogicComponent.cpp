@@ -234,7 +234,6 @@ void LogicComponent::doCalculations() {
 	Token* token = outputList.begin();
 	while (token != nullptr && !isERROR) {
 		if (token->symbols[0] != '\0' && isNumber(token->symbols)) {
-			token->showToken();
 			stack.push_back(token);
 			token = token->next;
 			outputList.deleteFirst();

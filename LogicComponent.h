@@ -27,9 +27,4 @@ public:
 	void ifFunc();
 	void minMaxFunc(Token* token);
 	int* calcSortedArr(Token* token);
-
-
-
-
-
 };
